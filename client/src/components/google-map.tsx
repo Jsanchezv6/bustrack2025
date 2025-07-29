@@ -82,19 +82,29 @@ export function GoogleMap({ locations, center, zoom = 13, className = "w-full h-
 
   // Actualizar marcadores cuando cambien las ubicaciones
   useEffect(() => {
+    console.log('GoogleMap - Ubicaciones recibidas:', locations);
     if (!map || !locations) return;
 
     // Limpiar marcadores existentes
     markers.forEach(marker => marker.setMap(null));
 
     // Crear nuevos marcadores
-    const newMarkers = locations
-      .filter(location => location.isTransmitting && location.latitude && location.longitude)
-      .map(location => {
+    const filteredLocations = locations.filter(location => {
+      const hasCoords = location.latitude && location.longitude;
+      const isValid = location.isTransmitting;
+      console.log(`Chofer ${location.driverId}: coords=${hasCoords}, transmitting=${isValid}`, location);
+      return hasCoords && isValid;
+    });
+    
+    console.log('Ubicaciones válidas para marcadores:', filteredLocations);
+    
+    const newMarkers = filteredLocations.map(location => {
         const position = {
           lat: parseFloat(location.latitude),
           lng: parseFloat(location.longitude)
         };
+        
+        console.log('Creando marcador en posición:', position);
 
         const marker = new (google as any).maps.Marker({
           position,

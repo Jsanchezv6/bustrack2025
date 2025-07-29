@@ -527,7 +527,7 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                     <GoogleMap 
-                      locations={[...locations, ...activeLocations]}
+                      locations={locations}
                       center={mapCenter}
                       zoom={mapZoom}
                       className="w-full h-96 rounded-lg"
