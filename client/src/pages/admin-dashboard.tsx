@@ -555,20 +555,24 @@ export default function AdminDashboard() {
                 {/* Driver Status */}
                 <div className="space-y-4">
                   <h3 className="font-semibold text-gray-800">Estado de Choferes</h3>
-                  {assignmentsWithDrivers.map((assignment) => {
-                    const location = locations.find(l => l.driverId === assignment.driverId) || 
-                                   activeLocations.find(l => l.driverId === assignment.driverId);
-                    const isTransmitting = transmittingDrivers.has(assignment.driverId || '') || location?.isTransmitting || false;
+                  {drivers.map((driver) => {
+                    // Buscar asignación del chofer para hoy
+                    const assignment = assignmentsWithDrivers.find(a => a.driverId === driver.id);
+                    
+                    // Buscar ubicación del chofer
+                    const location = locations.find(l => l.driverId === driver.id) || 
+                                   activeLocations.find(l => l.driverId === driver.id);
+                    const isTransmitting = transmittingDrivers.has(driver.id) || location?.isTransmitting || false;
                     
                     return (
                       <Card 
-                        key={assignment.id} 
+                        key={driver.id} 
                         className={`p-4 border-l-4 ${
                           isTransmitting ? 'border-green-500' : 'border-gray-300'
                         }`}
                       >
                         <div className="flex items-center justify-between mb-2">
-                          <span className="font-medium">{assignment.driver?.fullName}</span>
+                          <span className="font-medium">{driver.fullName}</span>
                           <span className={`flex items-center ${
                             isTransmitting ? 'text-green-600' : 'text-gray-500'
                           }`}>
@@ -576,9 +580,18 @@ export default function AdminDashboard() {
                             {isTransmitting ? 'Transmitiendo' : 'Desconectado'}
                           </span>
                         </div>
-                        <p className="text-sm text-gray-600">
-                          Ruta {assignment.schedule?.routeNumber} - {assignment.schedule?.routeName}
-                        </p>
+                        
+                        {/* Mostrar asignación si la tiene */}
+                        {assignment ? (
+                          <p className="text-sm text-gray-600 mb-2">
+                            Ruta {assignment.schedule?.routeNumber} - {assignment.schedule?.routeName}
+                          </p>
+                        ) : (
+                          <p className="text-sm text-orange-600 mb-2">
+                            Sin asignación para hoy
+                          </p>
+                        )}
+                        
                         <p className="text-xs text-gray-500 mb-3">
                           {location && location.timestamp ? 
                             `Última actualización: ${new Date(location.timestamp).toLocaleTimeString()}` :
@@ -586,24 +599,25 @@ export default function AdminDashboard() {
                           }
                         </p>
                         
-                        {/* Botón Localizar */}
-                        {location && isTransmitting && (
+                        {/* Botón Localizar - mostrar para cualquier chofer con ubicación */}
+                        {location && (
                           <Button
-                            onClick={() => locateDriver(assignment.driverId || '')}
+                            onClick={() => locateDriver(driver.id)}
                             size="sm"
                             variant="outline"
                             className="w-full text-xs"
+                            disabled={!isTransmitting}
                           >
                             <Navigation className="w-3 h-3 mr-1" />
-                            Localizar en Mapa
+                            {isTransmitting ? 'Localizar en Mapa' : 'No está transmitiendo'}
                           </Button>
                         )}
                       </Card>
                     );
                   })}
 
-                  {assignmentsWithDrivers.length === 0 && (
-                    <p className="text-gray-500">No hay choferes asignados</p>
+                  {drivers.length === 0 && (
+                    <p className="text-gray-500">No hay choferes registrados</p>
                   )}
                 </div>
               </div>
