@@ -12,6 +12,7 @@ import { Schedule, Assignment, User, Location } from "@shared/schema";
 import { ScheduleModal } from "@/components/schedule-modal";
 import { AssignmentModal } from "@/components/assignment-modal";
 import { GoogleMap } from "@/components/google-map";
+import { UserModal } from "@/components/user-modal";
 import { 
   Bus, 
   Users, 
@@ -25,7 +26,10 @@ import {
   Edit,
   Trash2,
   Circle,
-  Navigation
+  Navigation,
+  UserPlus,
+  Shield,
+  Car
 } from "lucide-react";
 
 export default function AdminDashboard() {
@@ -37,6 +41,8 @@ export default function AdminDashboard() {
   const [mapCenter, setMapCenter] = useState({ lat: -12.0464, lng: -77.0428 });
   const [mapZoom, setMapZoom] = useState(12);
   const mapRef = useRef<any>(null);
+  const [isUserModalOpen, setIsUserModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   
   const { toast } = useToast();
   const currentUser = authManager.getCurrentUser();
@@ -90,6 +96,10 @@ export default function AdminDashboard() {
     queryKey: ['/api/drivers'],
   });
 
+  const { data: users = [], isLoading: usersLoading } = useQuery<User[]>({
+    queryKey: ['/api/users'],
+  });
+
   const { data: locations = [] } = useQuery<Location[]>({
     queryKey: ['/api/locations'],
     refetchInterval: 30000, // Actualizar cada 30 segundos
@@ -122,6 +132,22 @@ export default function AdminDashboard() {
         variant: "destructive", 
         title: "Error", 
         description: "No se pudo eliminar la asignación" 
+      });
+    },
+  });
+
+  const deleteUserMutation = useMutation({
+    mutationFn: (id: string) => apiRequest("DELETE", `/api/users/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/users'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/drivers'] });
+      toast({ title: "Usuario eliminado exitosamente" });
+    },
+    onError: () => {
+      toast({ 
+        variant: "destructive", 
+        title: "Error", 
+        description: "No se pudo eliminar el usuario" 
       });
     },
   });
@@ -297,6 +323,13 @@ export default function AdminDashboard() {
                 >
                   <UserCog className="w-4 h-4 mr-2" />
                   Asignaciones
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="users"
+                  className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none"
+                >
+                  <Users className="w-4 h-4 mr-2" />
+                  Usuarios
                 </TabsTrigger>
                 <TabsTrigger 
                   value="monitoring"
@@ -558,6 +591,103 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </TabsContent>
+
+            {/* Users Tab */}
+            <TabsContent value="users" className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-semibold text-gray-800">Gestión de Usuarios</h2>
+                <Button 
+                  onClick={() => {
+                    setSelectedUser(null);
+                    setIsUserModalOpen(true);
+                  }}
+                  className="bg-primary hover:bg-primary-dark"
+                >
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Nuevo Usuario
+                </Button>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full table-auto">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Usuario</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre Completo</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rol</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Licencia</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha Creación</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {usersLoading ? (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-4 text-center">Cargando...</td>
+                      </tr>
+                    ) : users.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                          No hay usuarios registrados
+                        </td>
+                      </tr>
+                    ) : (
+                      users.map((user) => (
+                        <tr key={user.id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4">
+                            <div className="flex items-center">
+                              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold mr-3 ${
+                                user.role === 'admin' ? 'bg-blue-500' : 'bg-green-500'
+                              }`}>
+                                {user.role === 'admin' ? <Shield className="w-4 h-4" /> : <Car className="w-4 h-4" />}
+                              </div>
+                              <span className="font-medium">{user.username}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-900">{user.fullName}</td>
+                          <td className="px-6 py-4">
+                            <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
+                              {user.role === 'admin' ? 'Administrador' : 'Chofer'}
+                            </Badge>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-500">
+                            {user.licenseNumber || '-'}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-500">
+                            {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '-'}
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex space-x-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setSelectedUser(user);
+                                  setIsUserModalOpen(true);
+                                }}
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => {
+                                  if (confirm("¿Está seguro de que desea eliminar este usuario?")) {
+                                    deleteUserMutation.mutate(user.id);
+                                  }
+                                }}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </TabsContent>
           </Tabs>
         </Card>
       </div>
@@ -577,6 +707,15 @@ export default function AdminDashboard() {
         onClose={() => setIsAssignmentModalOpen(false)}
         drivers={availableDrivers}
         schedules={schedules}
+      />
+
+      <UserModal
+        isOpen={isUserModalOpen}
+        onClose={() => {
+          setIsUserModalOpen(false);
+          setSelectedUser(null);
+        }}
+        user={selectedUser}
       />
     </div>
   );
