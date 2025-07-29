@@ -46,12 +46,16 @@ export default function DriverDashboard() {
   } = useGeolocation({
     onLocationUpdate: (coords) => {
       if (isTransmitting && currentUser) {
+        console.log('Sending location update:', coords);
+        
         // Send location update via API
         apiRequest("POST", "/api/locations", {
           driverId: currentUser.id,
           latitude: coords.latitude.toString(),
           longitude: coords.longitude.toString(),
           isTransmitting: true,
+        }).then(response => {
+          console.log('Location sent successfully:', response);
         }).catch(error => {
           console.error('Error sending location:', error);
         });
@@ -80,13 +84,13 @@ export default function DriverDashboard() {
 
   // Query for driver's current assignment
   const { data: assignment, isLoading: assignmentLoading } = useQuery<Assignment>({
-    queryKey: ['/api/assignments/driver', currentUser?.id],
+    queryKey: [`/api/assignments/driver/${currentUser?.id}`],
     enabled: !!currentUser?.id,
   });
 
   // Query for schedule details
   const { data: schedule, isLoading: scheduleLoading } = useQuery<Schedule>({
-    queryKey: ['/api/schedules', assignment?.scheduleId],
+    queryKey: [`/api/schedules/${assignment?.scheduleId}`],
     enabled: !!assignment?.scheduleId,
   });
 

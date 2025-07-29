@@ -99,24 +99,29 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
       maximumAge,
     };
 
+    setState(prev => ({
+      ...prev,
+      isTransmitting: true,
+      error: null,
+    }));
+
     // Get current position first
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        console.log('Got initial location:', position.coords);
         handleSuccess(position);
         
         // Start watching position
         const id = navigator.geolocation.watchPosition(
-          handleSuccess,
+          (pos) => {
+            console.log('Location update:', pos.coords);
+            handleSuccess(pos);
+          },
           handleError,
           options
         );
         
         setWatchId(id);
-        setState(prev => ({
-          ...prev,
-          isTransmitting: true,
-          error: null,
-        }));
       },
       handleError,
       options
