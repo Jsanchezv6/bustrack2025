@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,7 +24,8 @@ import {
   Plus,
   Edit,
   Trash2,
-  Circle
+  Circle,
+  Navigation
 } from "lucide-react";
 
 export default function AdminDashboard() {
@@ -33,6 +34,9 @@ export default function AdminDashboard() {
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
   const [activeLocations, setActiveLocations] = useState<Location[]>([]);
   const [transmittingDrivers, setTransmittingDrivers] = useState<Set<string>>(new Set());
+  const [mapCenter, setMapCenter] = useState({ lat: -12.0464, lng: -77.0428 });
+  const [mapZoom, setMapZoom] = useState(12);
+  const mapRef = useRef<any>(null);
   
   const { toast } = useToast();
   const currentUser = authManager.getCurrentUser();
@@ -88,6 +92,7 @@ export default function AdminDashboard() {
 
   const { data: locations = [] } = useQuery<Location[]>({
     queryKey: ['/api/locations'],
+    refetchInterval: 30000, // Actualizar cada 30 segundos
   });
 
   // Mutations
@@ -123,6 +128,31 @@ export default function AdminDashboard() {
 
   const handleLogout = () => {
     authManager.logout();
+  };
+
+  // Función para localizar chofer en el mapa
+  const locateDriver = (driverId: string) => {
+    const location = locations.find(l => l.driverId === driverId) || 
+                    activeLocations.find(l => l.driverId === driverId);
+    
+    if (location) {
+      const lat = parseFloat(location.latitude);
+      const lng = parseFloat(location.longitude);
+      
+      setMapCenter({ lat, lng });
+      setMapZoom(16); // Zoom más cercano para ver la ubicación específica
+      
+      toast({
+        title: "Ubicación encontrada",
+        description: "El mapa se ha centrado en la ubicación del chofer",
+      });
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Ubicación no disponible",
+        description: "No se encontró la ubicación actual del chofer",
+      });
+    }
   };
 
   const handleEditSchedule = (schedule: Schedule) => {
@@ -451,11 +481,22 @@ export default function AdminDashboard() {
                 {/* Map Area */}
                 <div className="lg:col-span-2">
                   <Card className="p-4">
-                    <h3 className="font-semibold text-gray-800 mb-4">Ubicaciones en Tiempo Real</h3>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-semibold text-gray-800">Ubicaciones en Tiempo Real</h3>
+                      <div className="flex items-center space-x-4 text-sm">
+                        <span className="flex items-center text-green-600">
+                          <Circle className="w-2 h-2 mr-1 fill-current" />
+                          Activos: {transmittingDrivers.size}
+                        </span>
+                        <span className="text-gray-500">
+                          Total ubicaciones: {[...locations, ...activeLocations].length}
+                        </span>
+                      </div>
+                    </div>
                     <GoogleMap 
                       locations={[...locations, ...activeLocations]}
-                      center={{ lat: -12.0464, lng: -77.0428 }}
-                      zoom={12}
+                      center={mapCenter}
+                      zoom={mapZoom}
                       className="w-full h-96 rounded-lg"
                     />
                   </Card>
@@ -488,12 +529,25 @@ export default function AdminDashboard() {
                         <p className="text-sm text-gray-600">
                           Ruta {assignment.schedule?.routeNumber} - {assignment.schedule?.routeName}
                         </p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-500 mb-3">
                           {location && location.timestamp ? 
                             `Última actualización: ${new Date(location.timestamp).toLocaleTimeString()}` :
                             'Sin datos de ubicación'
                           }
                         </p>
+                        
+                        {/* Botón Localizar */}
+                        {location && isTransmitting && (
+                          <Button
+                            onClick={() => locateDriver(assignment.driverId || '')}
+                            size="sm"
+                            variant="outline"
+                            className="w-full text-xs"
+                          >
+                            <Navigation className="w-3 h-3 mr-1" />
+                            Localizar en Mapa
+                          </Button>
+                        )}
                       </Card>
                     );
                   })}

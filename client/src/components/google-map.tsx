@@ -115,12 +115,19 @@ export function GoogleMap({ locations, center, zoom = 13, className = "w-full h-
         // Ventana de información
         const infoWindow = new (google as any).maps.InfoWindow({
           content: `
-            <div class="p-2">
-              <h3 class="font-semibold text-sm">Chofer Activo</h3>
-              <p class="text-xs text-gray-600">ID: ${location.driverId}</p>
-              <p class="text-xs text-gray-600">
-                Actualizado: ${new Date(location.timestamp || '').toLocaleTimeString()}
-              </p>
+            <div class="p-3 min-w-48">
+              <h3 class="font-semibold text-sm mb-2 text-green-700">🚌 Chofer en Servicio</h3>
+              <div class="space-y-1 text-xs text-gray-600">
+                <p><strong>ID:</strong> ${location.driverId}</p>
+                <p><strong>Estado:</strong> <span class="text-green-600">Transmitiendo</span></p>
+                <p><strong>Coordenadas:</strong><br>
+                   Lat: ${parseFloat(location.latitude).toFixed(6)}<br>
+                   Lng: ${parseFloat(location.longitude).toFixed(6)}
+                </p>
+                <p><strong>Actualizado:</strong><br>
+                   ${new Date(location.timestamp || '').toLocaleString()}
+                </p>
+              </div>
             </div>
           `
         });
