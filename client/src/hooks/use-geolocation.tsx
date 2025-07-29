@@ -42,6 +42,8 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
       longitude: position.coords.longitude,
     };
 
+    console.log('GPS - Nuevas coordenadas obtenidas:', coordinates);
+
     setState(prev => ({
       ...prev,
       coordinates,

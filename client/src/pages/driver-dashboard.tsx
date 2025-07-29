@@ -46,7 +46,7 @@ export default function DriverDashboard() {
   } = useGeolocation({
     onLocationUpdate: (coords) => {
       if (isTransmitting && currentUser) {
-        console.log('Sending location update:', coords);
+        console.log('Transmitiendo ubicación:', coords);
         
         // Send location update via API
         apiRequest("POST", "/api/locations", {
@@ -55,9 +55,9 @@ export default function DriverDashboard() {
           longitude: coords.longitude.toString(),
           isTransmitting: true,
         }).then(response => {
-          console.log('Location sent successfully:', response);
+          console.log('Ubicación enviada exitosamente:', response);
         }).catch(error => {
-          console.error('Error sending location:', error);
+          console.error('Error enviando ubicación:', error);
         });
 
         // Also send via WebSocket for real-time updates
