@@ -5,7 +5,7 @@ import { LoginRequest, loginSchema } from "@shared/schema";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -20,14 +20,11 @@ export default function Login({ onLoginSuccess }: LoginProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const form = useForm<LoginRequest & { role: string }>({
-    resolver: zodResolver(loginSchema.extend({
-      role: loginSchema.shape.username, // Just for form validation, not used in API
-    })),
+  const form = useForm<LoginRequest>({
+    resolver: zodResolver(loginSchema),
     defaultValues: {
       username: "",
       password: "",
-      role: "admin",
     },
   });
 
@@ -106,27 +103,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="role"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Tipo de Usuario</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccione su rol" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="admin">Administrador</SelectItem>
-                        <SelectItem value="driver">Chofer</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+
 
               <Button
                 type="submit"
@@ -138,11 +115,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
             </form>
           </Form>
 
-          <div className="mt-6 text-center text-sm text-gray-600">
-            <p>Usuarios de prueba:</p>
-            <p>Admin: admin / admin123</p>
-            <p>Chofer: chofer1 / chofer123</p>
-          </div>
+
         </CardContent>
       </Card>
     </div>
