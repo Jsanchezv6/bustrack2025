@@ -232,8 +232,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/locations", async (req, res) => {
     try {
+      console.log('POST /api/locations - Datos recibidos:', req.body);
       const locationData = insertLocationSchema.parse(req.body);
+      console.log('POST /api/locations - Datos validados:', locationData);
       const location = await storage.updateDriverLocation(locationData);
+      console.log('POST /api/locations - Ubicación guardada:', location);
       
       // Broadcast location update to all admin connections
       const locationUpdate = {
@@ -249,7 +252,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(location);
     } catch (error) {
-      res.status(400).json({ message: "Datos de ubicación inválidos" });
+      console.error('Error POST /api/locations:', error);
+      res.status(400).json({ message: "Datos de ubicación inválidos", error: error instanceof Error ? error.message : 'Error desconocido' });
     }
   });
 
