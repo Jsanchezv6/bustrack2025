@@ -562,12 +562,20 @@ export default function AdminDashboard() {
                         <p className="text-sm text-gray-600">
                           Ruta {assignment.schedule?.routeNumber} - {assignment.schedule?.routeName}
                         </p>
-                        <p className="text-xs text-gray-500 mb-3">
-                          {location && location.timestamp ? 
-                            `Última actualización: ${new Date(location.timestamp).toLocaleTimeString()}` :
-                            'Sin datos de ubicación'
-                          }
-                        </p>
+                        <div className="text-xs text-gray-500 mb-3 space-y-1">
+                          {location && location.timestamp ? (
+                            <>
+                              <p><strong>Última actualización:</strong> {new Date(location.timestamp).toLocaleTimeString()}</p>
+                              <p><strong>Coordenadas GPS:</strong></p>
+                              <p className="font-mono text-xs bg-gray-100 p-1 rounded">
+                                Lat: {parseFloat(location.latitude).toFixed(6)}<br/>
+                                Lng: {parseFloat(location.longitude).toFixed(6)}
+                              </p>
+                            </>
+                          ) : (
+                            <p>Sin datos de ubicación GPS</p>
+                          )}
+                        </div>
                         
                         {/* Botón Localizar */}
                         {location && isTransmitting && (
