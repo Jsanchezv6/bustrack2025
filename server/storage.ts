@@ -6,8 +6,14 @@ import {
   type Assignment,
   type InsertAssignment,
   type Location,
-  type InsertLocation
+  type InsertLocation,
+  users,
+  schedules,
+  assignments,
+  locations
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, and } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
@@ -38,220 +44,212 @@ export interface IStorage {
   setDriverTransmissionStatus(driverId: string, isTransmitting: boolean): Promise<void>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<string, User>;
-  private schedules: Map<string, Schedule>;
-  private assignments: Map<string, Assignment>;
-  private locations: Map<string, Location>;
-
+// Implementación de almacenamiento con base de datos PostgreSQL
+export class DatabaseStorage implements IStorage {
   constructor() {
-    this.users = new Map();
-    this.schedules = new Map();
-    this.assignments = new Map();
-    this.locations = new Map();
-
-    // Initialize with default admin and driver users
+    // Inicializar datos por defecto al crear la instancia
     this.initializeDefaultData();
   }
 
   private async initializeDefaultData() {
-    // Create default admin
-    const admin: User = {
-      id: randomUUID(),
-      username: "admin",
-      password: "admin123", // In production, this should be hashed
-      role: "admin",
-      fullName: "Administrador Sistema",
-      licenseNumber: null,
-      createdAt: new Date(),
-    };
-    this.users.set(admin.id, admin);
+    try {
+      // Verificar si ya existen usuarios
+      const existingUsers = await db.select().from(users).limit(1);
+      if (existingUsers.length > 0) {
+        return; // Ya hay datos inicializados
+      }
 
-    // Create default driver
-    const driver: User = {
-      id: randomUUID(),
-      username: "chofer1",
-      password: "chofer123", // In production, this should be hashed
-      role: "driver",
-      fullName: "Juan Pérez",
-      licenseNumber: "A1234567",
-      createdAt: new Date(),
-    };
-    this.users.set(driver.id, driver);
+      // Crear usuario administrador por defecto
+      const [admin] = await db.insert(users).values({
+        username: "admin",
+        password: "admin123", // En producción, esto debería estar hasheado
+        role: "admin",
+        fullName: "Administrador Sistema",
+        licenseNumber: null,
+      }).returning();
 
-    // Create sample schedule
-    const schedule: Schedule = {
-      id: randomUUID(),
-      routeName: "Centro - Universidad",
-      routeNumber: 1,
-      startTime: "06:00",
-      endTime: "22:00",
-      frequency: 15,
-      isActive: true,
-      createdAt: new Date(),
-    };
-    this.schedules.set(schedule.id, schedule);
+      // Crear chofer por defecto
+      const [driver] = await db.insert(users).values({
+        username: "chofer1",
+        password: "chofer123", // En producción, esto debería estar hasheado
+        role: "driver",
+        fullName: "Juan Pérez",
+        licenseNumber: "A1234567",
+      }).returning();
 
-    // Create sample assignment
-    const assignment: Assignment = {
-      id: randomUUID(),
-      driverId: driver.id,
-      scheduleId: schedule.id,
-      assignedDate: new Date().toISOString().split('T')[0],
-      shiftStart: "06:00",
-      shiftEnd: "14:00",
-      isActive: true,
-      createdAt: new Date(),
-    };
-    this.assignments.set(assignment.id, assignment);
+      // Crear horario de muestra
+      const [schedule] = await db.insert(schedules).values({
+        routeName: "Centro - Universidad",
+        routeNumber: 1,
+        startTime: "06:00",
+        endTime: "22:00",
+        frequency: 15,
+        isActive: true,
+      }).returning();
+
+      // Crear asignación de muestra
+      await db.insert(assignments).values({
+        driverId: driver.id,
+        scheduleId: schedule.id,
+        assignedDate: new Date().toISOString().split('T')[0],
+        shiftStart: "06:00",
+        shiftEnd: "14:00",
+        isActive: true,
+      });
+
+      console.log("Datos iniciales creados en la base de datos");
+    } catch (error) {
+      console.error("Error al inicializar datos por defecto:", error);
+    }
   }
 
-  // Users
+  // Métodos para Users
   async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { 
-      ...insertUser, 
-      id,
-      createdAt: new Date(),
-    };
-    this.users.set(id, user);
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
     return user;
   }
 
   async getAllDrivers(): Promise<User[]> {
-    return Array.from(this.users.values()).filter(user => user.role === 'driver');
+    return await db.select().from(users).where(eq(users.role, 'driver'));
   }
 
-  // Schedules
+  // Métodos para Schedules
   async getAllSchedules(): Promise<Schedule[]> {
-    return Array.from(this.schedules.values());
+    return await db.select().from(schedules);
   }
 
   async getSchedule(id: string): Promise<Schedule | undefined> {
-    return this.schedules.get(id);
+    const [schedule] = await db.select().from(schedules).where(eq(schedules.id, id));
+    return schedule || undefined;
   }
 
   async createSchedule(insertSchedule: InsertSchedule): Promise<Schedule> {
-    const id = randomUUID();
-    const schedule: Schedule = {
-      ...insertSchedule,
-      id,
-      createdAt: new Date(),
-    };
-    this.schedules.set(id, schedule);
+    const [schedule] = await db
+      .insert(schedules)
+      .values(insertSchedule)
+      .returning();
     return schedule;
   }
 
   async updateSchedule(id: string, updates: Partial<Schedule>): Promise<Schedule | undefined> {
-    const existing = this.schedules.get(id);
-    if (!existing) return undefined;
-
-    const updated = { ...existing, ...updates };
-    this.schedules.set(id, updated);
-    return updated;
+    const [updated] = await db
+      .update(schedules)
+      .set(updates)
+      .where(eq(schedules.id, id))
+      .returning();
+    return updated || undefined;
   }
 
   async deleteSchedule(id: string): Promise<boolean> {
-    return this.schedules.delete(id);
+    const result = await db.delete(schedules).where(eq(schedules.id, id));
+    return result.rowCount > 0;
   }
 
-  // Assignments
+  // Métodos para Assignments
   async getAllAssignments(): Promise<Assignment[]> {
-    return Array.from(this.assignments.values());
+    return await db.select().from(assignments);
   }
 
   async getAssignmentsByDriverId(driverId: string): Promise<Assignment[]> {
-    return Array.from(this.assignments.values()).filter(
-      assignment => assignment.driverId === driverId
-    );
+    return await db.select().from(assignments).where(eq(assignments.driverId, driverId));
   }
 
   async getActiveAssignmentByDriverId(driverId: string): Promise<Assignment | undefined> {
     const today = new Date().toISOString().split('T')[0];
-    return Array.from(this.assignments.values()).find(
-      assignment => 
-        assignment.driverId === driverId && 
-        assignment.isActive && 
-        assignment.assignedDate === today
-    );
+    const [assignment] = await db
+      .select()
+      .from(assignments)
+      .where(
+        and(
+          eq(assignments.driverId, driverId),
+          eq(assignments.isActive, true),
+          eq(assignments.assignedDate, today)
+        )
+      );
+    return assignment || undefined;
   }
 
   async createAssignment(insertAssignment: InsertAssignment): Promise<Assignment> {
-    const id = randomUUID();
-    const assignment: Assignment = {
-      ...insertAssignment,
-      id,
-      createdAt: new Date(),
-    };
-    this.assignments.set(id, assignment);
+    const [assignment] = await db
+      .insert(assignments)
+      .values(insertAssignment)
+      .returning();
     return assignment;
   }
 
   async deleteAssignment(id: string): Promise<boolean> {
-    return this.assignments.delete(id);
+    const result = await db.delete(assignments).where(eq(assignments.id, id));
+    return result.rowCount > 0;
   }
 
-  // Locations
+  // Métodos para Locations
   async updateDriverLocation(insertLocation: InsertLocation): Promise<Location> {
-    // Find existing location for driver or create new one
-    const existingLocation = Array.from(this.locations.values()).find(
-      loc => loc.driverId === insertLocation.driverId
-    );
+    // Buscar ubicación existente para el chofer
+    const [existingLocation] = await db
+      .select()
+      .from(locations)
+      .where(eq(locations.driverId, insertLocation.driverId));
 
     if (existingLocation) {
-      const updated: Location = {
-        ...existingLocation,
-        latitude: insertLocation.latitude,
-        longitude: insertLocation.longitude,
-        isTransmitting: insertLocation.isTransmitting,
-        timestamp: new Date(),
-      };
-      this.locations.set(existingLocation.id, updated);
+      // Actualizar ubicación existente
+      const [updated] = await db
+        .update(locations)
+        .set({
+          latitude: insertLocation.latitude,
+          longitude: insertLocation.longitude,
+          isTransmitting: insertLocation.isTransmitting,
+          timestamp: new Date(),
+        })
+        .where(eq(locations.id, existingLocation.id))
+        .returning();
       return updated;
     } else {
-      const id = randomUUID();
-      const location: Location = {
-        ...insertLocation,
-        id,
-        timestamp: new Date(),
-      };
-      this.locations.set(id, location);
+      // Crear nueva ubicación
+      const [location] = await db
+        .insert(locations)
+        .values(insertLocation)
+        .returning();
       return location;
     }
   }
 
   async getDriverLocation(driverId: string): Promise<Location | undefined> {
-    return Array.from(this.locations.values()).find(
-      loc => loc.driverId === driverId
-    );
+    const [location] = await db
+      .select()
+      .from(locations)
+      .where(eq(locations.driverId, driverId));
+    return location || undefined;
   }
 
   async getAllActiveLocations(): Promise<Location[]> {
-    return Array.from(this.locations.values()).filter(
-      loc => loc.isTransmitting
-    );
+    return await db
+      .select()
+      .from(locations)
+      .where(eq(locations.isTransmitting, true));
   }
 
   async setDriverTransmissionStatus(driverId: string, isTransmitting: boolean): Promise<void> {
-    const location = Array.from(this.locations.values()).find(
-      loc => loc.driverId === driverId
-    );
-
-    if (location) {
-      const updated = { ...location, isTransmitting, timestamp: new Date() };
-      this.locations.set(location.id, updated);
-    }
+    await db
+      .update(locations)
+      .set({ 
+        isTransmitting,
+        timestamp: new Date()
+      })
+      .where(eq(locations.driverId, driverId));
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();

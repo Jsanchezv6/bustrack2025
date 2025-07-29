@@ -33,7 +33,7 @@ The application follows a monorepo structure with clear separation between clien
 - **Express.js** server with TypeScript
 - **Drizzle ORM** with PostgreSQL dialect for database operations
 - **WebSocket Server** for real-time location broadcasting
-- **In-memory storage** fallback for development (MemStorage class)
+- **PostgreSQL database** with DatabaseStorage class for persistent data
 - **Session-based authentication** (simplified for demo purposes)
 
 ### Database Schema
