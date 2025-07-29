@@ -101,71 +101,22 @@ export default function DriverDashboard() {
     }
 
     if (!isTransmitting) {
-      // Primero obtener ubicación actual para confirmar permisos
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const coords = {
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude
-          };
+      startTracking();
+      setIsTransmitting(true);
+      
+      // Notify server about transmission status
+      if (currentUser) {
+        sendMessage({
+          type: 'transmissionStatus',
+          driverId: currentUser.id,
+          isTransmitting: true
+        });
+      }
 
-          console.log('🔍 Coordenadas GPS obtenidas del dispositivo:', coords);
-          
-          startTracking();
-          setIsTransmitting(true);
-          
-          // Enviar ubicación inicial inmediatamente
-          if (currentUser) {
-            apiRequest("POST", "/api/locations", {
-              driverId: currentUser.id,
-              latitude: coords.latitude.toString(),
-              longitude: coords.longitude.toString(),
-              isTransmitting: true,
-            }).then(() => {
-              console.log('✅ Ubicación enviada al servidor:', coords);
-            }).catch(error => {
-              console.error('❌ Error enviando ubicación:', error);
-            });
-
-            // Notificar estado de transmisión
-            sendMessage({
-              type: 'transmissionStatus',
-              driverId: currentUser.id,
-              isTransmitting: true
-            });
-          }
-
-          toast({
-            title: "Transmisión iniciada",
-            description: `GPS activo en: ${coords.latitude.toFixed(6)}, ${coords.longitude.toFixed(6)}`,
-          });
-        },
-        (error) => {
-          let errorMessage = 'Error al obtener ubicación GPS';
-          switch (error.code) {
-            case error.PERMISSION_DENIED:
-              errorMessage = 'Permisos de ubicación denegados. Active la ubicación en su navegador.';
-              break;
-            case error.POSITION_UNAVAILABLE:
-              errorMessage = 'Ubicación GPS no disponible. Verifique su conexión.';
-              break;
-            case error.TIMEOUT:
-              errorMessage = 'Tiempo de espera agotado. Intente nuevamente.';
-              break;
-          }
-          
-          toast({
-            variant: "destructive",
-            title: "Error GPS",
-            description: errorMessage,
-          });
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 15000,
-          maximumAge: 60000
-        }
-      );
+      toast({
+        title: "Transmisión iniciada",
+        description: "Su ubicación se está compartiendo cada 30 segundos.",
+      });
     } else {
       stopTracking();
       setIsTransmitting(false);
@@ -181,7 +132,7 @@ export default function DriverDashboard() {
 
       toast({
         title: "Transmisión detenida",
-        description: "Ha dejado de compartir su ubicación GPS.",
+        description: "Ha dejado de compartir su ubicación.",
       });
     }
   };

@@ -2,13 +2,11 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
-import { z } from "zod";
 import { 
   loginSchema, 
   insertScheduleSchema, 
   insertAssignmentSchema,
-  insertLocationSchema,
-  insertUserSchema
+  insertLocationSchema
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -162,61 +160,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(drivers);
     } catch (error) {
       res.status(500).json({ message: "Error al obtener choferes" });
-    }
-  });
-
-  // Users management endpoints
-  app.get("/api/users", async (req, res) => {
-    try {
-      const users = await storage.getAllUsers();
-      res.json(users);
-    } catch (error) {
-      console.error('Error getting users:', error);
-      res.status(500).json({ message: "Error interno del servidor" });
-    }
-  });
-
-  app.post("/api/users", async (req, res) => {
-    try {
-      const userData = insertUserSchema.parse(req.body);
-      const user = await storage.createUser(userData);
-      res.json(user);
-    } catch (error) {
-      console.error('Error creating user:', error);
-      if (error instanceof z.ZodError) {
-        res.status(400).json({ message: "Datos inválidos", errors: error.errors });
-      } else {
-        res.status(500).json({ message: "Error interno del servidor" });
-      }
-    }
-  });
-
-  app.put("/api/users/:id", async (req, res) => {
-    try {
-      const userId = req.params.id;
-      const userData = req.body;
-      const updatedUser = await storage.updateUser(userId, userData);
-      if (!updatedUser) {
-        return res.status(404).json({ message: "Usuario no encontrado" });
-      }
-      res.json(updatedUser);
-    } catch (error) {
-      console.error('Error updating user:', error);
-      res.status(500).json({ message: "Error interno del servidor" });
-    }
-  });
-
-  app.delete("/api/users/:id", async (req, res) => {
-    try {
-      const userId = req.params.id;
-      const deleted = await storage.deleteUser(userId);
-      if (!deleted) {
-        return res.status(404).json({ message: "Usuario no encontrado" });
-      }
-      res.json({ success: true });
-    } catch (error) {
-      console.error('Error deleting user:', error);
-      res.status(500).json({ message: "Error interno del servidor" });
     }
   });
 

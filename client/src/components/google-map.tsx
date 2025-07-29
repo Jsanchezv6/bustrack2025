@@ -116,19 +116,17 @@ export function GoogleMap({ locations, center, zoom = 13, className = "w-full h-
         const infoWindow = new (google as any).maps.InfoWindow({
           content: `
             <div class="p-3 min-w-48">
-              <h3 class="font-semibold text-sm mb-2 text-green-700">🚌 Chofer Activo</h3>
+              <h3 class="font-semibold text-sm mb-2 text-green-700">🚌 Chofer en Servicio</h3>
               <div class="space-y-1 text-xs text-gray-600">
-                <p><strong>ID Chofer:</strong> ${location.driverId}</p>
-                <p><strong>Estado:</strong> <span class="text-green-600 font-semibold">📡 Transmitiendo GPS</span></p>
-                <p><strong>Coordenadas GPS Reales:</strong></p>
-                <div class="bg-gray-100 p-2 rounded font-mono text-xs">
-                   <strong>Latitud:</strong> ${parseFloat(location.latitude).toFixed(8)}<br>
-                   <strong>Longitud:</strong> ${parseFloat(location.longitude).toFixed(8)}
-                </div>
-                <p><strong>Última Actualización:</strong><br>
-                   ${new Date(location.timestamp || '').toLocaleString('es-ES')}
+                <p><strong>ID:</strong> ${location.driverId}</p>
+                <p><strong>Estado:</strong> <span class="text-green-600">Transmitiendo</span></p>
+                <p><strong>Coordenadas:</strong><br>
+                   Lat: ${parseFloat(location.latitude).toFixed(6)}<br>
+                   Lng: ${parseFloat(location.longitude).toFixed(6)}
                 </p>
-                <p class="text-blue-600"><strong>📍 Ubicación en tiempo real</strong></p>
+                <p><strong>Actualizado:</strong><br>
+                   ${new Date(location.timestamp || '').toLocaleString()}
+                </p>
               </div>
             </div>
           `
