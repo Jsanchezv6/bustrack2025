@@ -107,26 +107,36 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
       error: null,
     }));
 
-    // Get current position first
+    // Configuración para obtener ubicación GPS real
+    const gpsOptions: PositionOptions = {
+      enableHighAccuracy: true,
+      timeout: 60000, // 60 segundos
+      maximumAge: 0,   // No usar caché, siempre obtener ubicación fresca
+    };
+
+    // Get current position first - FORZAR GPS REAL
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        console.log('Got initial location:', position.coords);
+        console.log('GPS REAL obtenido:', position.coords);
         handleSuccess(position);
         
-        // Start watching position
+        // Start watching position con GPS real
         const id = navigator.geolocation.watchPosition(
           (pos) => {
-            console.log('Location update:', pos.coords);
+            console.log('Actualización GPS REAL:', pos.coords);
             handleSuccess(pos);
           },
           handleError,
-          options
+          gpsOptions
         );
         
         setWatchId(id);
       },
-      handleError,
-      options
+      (error) => {
+        console.error('Error obteniendo GPS:', error);
+        handleError(error);
+      },
+      gpsOptions
     );
   }, [state.isSupported, state.isTransmitting, enableHighAccuracy, timeout, maximumAge, handleSuccess, handleError]);
 

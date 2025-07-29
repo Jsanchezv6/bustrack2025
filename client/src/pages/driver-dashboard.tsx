@@ -45,19 +45,22 @@ export default function DriverDashboard() {
     isSupported 
   } = useGeolocation({
     onLocationUpdate: (coords) => {
-      if (isTransmitting && currentUser) {
-        console.log('Transmitiendo ubicación:', coords);
+      if (isTransmitting && currentUser && coords) {
+        console.log('=== COORDENADAS GPS REALES DEL CHOFER ===');
+        console.log('Latitud:', coords.latitude);
+        console.log('Longitud:', coords.longitude);
+        console.log('Chofer ID:', currentUser.id);
         
-        // Send location update via API
+        // Enviar ubicación GPS REAL del chofer
         apiRequest("POST", "/api/locations", {
           driverId: currentUser.id,
           latitude: coords.latitude.toString(),
           longitude: coords.longitude.toString(),
           isTransmitting: true,
         }).then(response => {
-          console.log('Ubicación enviada exitosamente:', response);
+          console.log('GPS REAL enviado al servidor:', response);
         }).catch(error => {
-          console.error('Error enviando ubicación:', error);
+          console.error('ERROR enviando GPS:', error);
         });
 
         // Also send via WebSocket for real-time updates
