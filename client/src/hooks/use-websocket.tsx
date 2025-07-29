@@ -4,6 +4,9 @@ interface WebSocketMessage {
   type: string;
   data?: any;
   connectionId?: string;
+  location?: any;
+  driverId?: string;
+  isTransmitting?: boolean;
 }
 
 interface UseWebSocketOptions {

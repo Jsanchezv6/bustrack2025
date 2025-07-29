@@ -11,6 +11,7 @@ import { authManager } from "@/lib/auth";
 import { Schedule, Assignment, User, Location } from "@shared/schema";
 import { ScheduleModal } from "@/components/schedule-modal";
 import { AssignmentModal } from "@/components/assignment-modal";
+import { GoogleMap } from "@/components/google-map";
 import { 
   Bus, 
   Users, 
@@ -430,14 +431,14 @@ export default function AdminDashboard() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Map Area */}
                 <div className="lg:col-span-2">
-                  <Card className="aspect-video flex items-center justify-center">
-                    <div className="text-center">
-                      <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-600">Mapa de Ubicaciones en Tiempo Real</p>
-                      <p className="text-sm text-gray-500 mt-2">
-                        Aquí se mostraría un mapa interactivo con las ubicaciones de los buses
-                      </p>
-                    </div>
+                  <Card className="p-4">
+                    <h3 className="font-semibold text-gray-800 mb-4">Ubicaciones en Tiempo Real</h3>
+                    <GoogleMap 
+                      locations={[...locations, ...activeLocations]}
+                      center={{ lat: -12.0464, lng: -77.0428 }}
+                      zoom={12}
+                      className="w-full h-96 rounded-lg"
+                    />
                   </Card>
                 </div>
 
@@ -468,7 +469,7 @@ export default function AdminDashboard() {
                           Ruta {assignment.schedule?.routeNumber} - {assignment.schedule?.routeName}
                         </p>
                         <p className="text-xs text-gray-500">
-                          {location ? 
+                          {location && location.timestamp ? 
                             `Última actualización: ${new Date(location.timestamp).toLocaleTimeString()}` :
                             'Sin datos de ubicación'
                           }
