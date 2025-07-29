@@ -155,7 +155,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteSchedule(id: string): Promise<boolean> {
     const result = await db.delete(schedules).where(eq(schedules.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount || 0) > 0;
   }
 
   // Métodos para Assignments
@@ -192,7 +192,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteAssignment(id: string): Promise<boolean> {
     const result = await db.delete(assignments).where(eq(assignments.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount || 0) > 0;
   }
 
   // Métodos para Locations

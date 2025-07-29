@@ -32,6 +32,7 @@ export default function AdminDashboard() {
   const [isAssignmentModalOpen, setIsAssignmentModalOpen] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
   const [activeLocations, setActiveLocations] = useState<Location[]>([]);
+  const [transmittingDrivers, setTransmittingDrivers] = useState<Set<string>>(new Set());
   
   const { toast } = useToast();
   const currentUser = authManager.getCurrentUser();
@@ -47,6 +48,24 @@ export default function AdminDashboard() {
             updated[index] = message.data;
           } else {
             updated.push(message.data);
+          }
+          return updated;
+        });
+        
+        // Actualizar estado de transmisión cuando hay una ubicación nueva
+        if (message.data?.isTransmitting && message.data?.driverId) {
+          setTransmittingDrivers(prev => new Set(Array.from(prev).concat([message.data.driverId])));
+        }
+      }
+      
+      if (message.type === 'transmissionStatusUpdate') {
+        const { driverId, isTransmitting } = message.data;
+        setTransmittingDrivers(prev => {
+          const updated = new Set(prev);
+          if (isTransmitting) {
+            updated.add(driverId);
+          } else {
+            updated.delete(driverId);
           }
           return updated;
         });
@@ -446,8 +465,9 @@ export default function AdminDashboard() {
                 <div className="space-y-4">
                   <h3 className="font-semibold text-gray-800">Estado de Choferes</h3>
                   {assignmentsWithDrivers.map((assignment) => {
-                    const location = locations.find(l => l.driverId === assignment.driverId);
-                    const isTransmitting = location?.isTransmitting || false;
+                    const location = locations.find(l => l.driverId === assignment.driverId) || 
+                                   activeLocations.find(l => l.driverId === assignment.driverId);
+                    const isTransmitting = transmittingDrivers.has(assignment.driverId || '') || location?.isTransmitting || false;
                     
                     return (
                       <Card 
