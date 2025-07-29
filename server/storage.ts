@@ -22,6 +22,9 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   getAllDrivers(): Promise<User[]>;
+  getAllUsers(): Promise<User[]>;
+  updateUser(id: string, user: Partial<User>): Promise<User | undefined>;
+  deleteUser(id: string): Promise<boolean>;
 
   // Schedules
   getAllSchedules(): Promise<Schedule[]>;
@@ -124,6 +127,24 @@ export class DatabaseStorage implements IStorage {
 
   async getAllDrivers(): Promise<User[]> {
     return await db.select().from(users).where(eq(users.role, 'driver'));
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users);
+  }
+
+  async updateUser(id: string, userData: Partial<User>): Promise<User | undefined> {
+    const [updatedUser] = await db
+      .update(users)
+      .set(userData)
+      .where(eq(users.id, id))
+      .returning();
+    return updatedUser || undefined;
+  }
+
+  async deleteUser(id: string): Promise<boolean> {
+    const result = await db.delete(users).where(eq(users.id, id));
+    return (result.rowCount || 0) > 0;
   }
 
   // Métodos para Schedules
