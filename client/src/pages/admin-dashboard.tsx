@@ -157,26 +157,43 @@ export default function AdminDashboard() {
   };
 
   // Función para localizar chofer en el mapa
-  const locateDriver = (driverId: string) => {
-    const location = locations.find(l => l.driverId === driverId) || 
-                    activeLocations.find(l => l.driverId === driverId);
-    
-    if (location) {
-      const lat = parseFloat(location.latitude);
-      const lng = parseFloat(location.longitude);
+  const locateDriver = async (driverId: string) => {
+    try {
+      // Buscar la ubicación más reciente del chofer directamente de la API
+      const response = await fetch(`/api/locations`);
+      const allLocations = await response.json();
       
-      setMapCenter({ lat, lng });
-      setMapZoom(16); // Zoom más cercano para ver la ubicación específica
+      // Filtrar por el chofer específico y solo ubicaciones activas
+      const driverLocation = allLocations.find((l: Location) => 
+        l.driverId === driverId && l.isTransmitting
+      );
       
-      toast({
-        title: "Ubicación encontrada",
-        description: "El mapa se ha centrado en la ubicación del chofer",
-      });
-    } else {
+      if (driverLocation) {
+        const lat = parseFloat(driverLocation.latitude);
+        const lng = parseFloat(driverLocation.longitude);
+        
+        console.log(`Localizando chofer ${driverId} en:`, { lat, lng });
+        
+        setMapCenter({ lat, lng });
+        setMapZoom(16); // Zoom más cercano para ver la ubicación específica
+        
+        toast({
+          title: "Ubicación encontrada",
+          description: `Chofer localizado en: ${lat.toFixed(4)}, ${lng.toFixed(4)}`,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Ubicación no disponible",
+          description: "El chofer no está transmitiendo su ubicación actualmente",
+        });
+      }
+    } catch (error) {
+      console.error('Error al obtener ubicación del chofer:', error);
       toast({
         variant: "destructive",
-        title: "Ubicación no disponible",
-        description: "No se encontró la ubicación actual del chofer",
+        title: "Error",
+        description: "No se pudo obtener la ubicación del chofer",
       });
     }
   };
