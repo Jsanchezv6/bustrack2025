@@ -45,22 +45,15 @@ export default function DriverDashboard() {
     isSupported 
   } = useGeolocation({
     onLocationUpdate: (coords) => {
-      if (isTransmitting && currentUser && coords) {
-        console.log('=== COORDENADAS GPS REALES DEL CHOFER ===');
-        console.log('Latitud:', coords.latitude);
-        console.log('Longitud:', coords.longitude);
-        console.log('Chofer ID:', currentUser.id);
-        
-        // Enviar ubicación GPS REAL del chofer
+      if (isTransmitting && currentUser) {
+        // Send location update via API
         apiRequest("POST", "/api/locations", {
           driverId: currentUser.id,
           latitude: coords.latitude.toString(),
           longitude: coords.longitude.toString(),
           isTransmitting: true,
-        }).then(response => {
-          console.log('GPS REAL enviado al servidor:', response);
         }).catch(error => {
-          console.error('ERROR enviando GPS:', error);
+          console.error('Error sending location:', error);
         });
 
         // Also send via WebSocket for real-time updates
@@ -87,13 +80,13 @@ export default function DriverDashboard() {
 
   // Query for driver's current assignment
   const { data: assignment, isLoading: assignmentLoading } = useQuery<Assignment>({
-    queryKey: [`/api/assignments/driver/${currentUser?.id}`],
+    queryKey: ['/api/assignments/driver', currentUser?.id],
     enabled: !!currentUser?.id,
   });
 
   // Query for schedule details
   const { data: schedule, isLoading: scheduleLoading } = useQuery<Schedule>({
-    queryKey: [`/api/schedules/${assignment?.scheduleId}`],
+    queryKey: ['/api/schedules', assignment?.scheduleId],
     enabled: !!assignment?.scheduleId,
   });
 

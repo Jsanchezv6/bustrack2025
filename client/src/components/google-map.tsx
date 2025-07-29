@@ -58,7 +58,6 @@ export function GoogleMap({ locations, center, zoom = 13, className = "w-full h-
   useEffect(() => {
     if (!isLoaded || !mapRef.current || map) return;
 
-    // Usar coordenadas proporcionadas o una ubicación por defecto
     const defaultCenter = center || { lat: -12.0464, lng: -77.0428 }; // Lima, Perú por defecto
 
     const newMap = new (google as any).maps.Map(mapRef.current, {
@@ -88,7 +87,7 @@ export function GoogleMap({ locations, center, zoom = 13, className = "w-full h-
     // Limpiar marcadores existentes
     markers.forEach(marker => marker.setMap(null));
 
-    // Crear nuevos marcadores para ubicaciones que están transmitiendo
+    // Crear nuevos marcadores
     const newMarkers = locations
       .filter(location => location.isTransmitting && location.latitude && location.longitude)
       .map(location => {

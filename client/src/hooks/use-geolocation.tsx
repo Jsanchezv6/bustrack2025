@@ -42,8 +42,6 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
       longitude: position.coords.longitude,
     };
 
-    console.log('GPS - Nuevas coordenadas obtenidas:', coordinates);
-
     setState(prev => ({
       ...prev,
       coordinates,
@@ -101,42 +99,27 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
       maximumAge,
     };
 
-    setState(prev => ({
-      ...prev,
-      isTransmitting: true,
-      error: null,
-    }));
-
-    // Configuración para obtener ubicación GPS real
-    const gpsOptions: PositionOptions = {
-      enableHighAccuracy: true,
-      timeout: 60000, // 60 segundos
-      maximumAge: 0,   // No usar caché, siempre obtener ubicación fresca
-    };
-
-    // Get current position first - FORZAR GPS REAL
+    // Get current position first
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        console.log('GPS REAL obtenido:', position.coords);
         handleSuccess(position);
         
-        // Start watching position con GPS real
+        // Start watching position
         const id = navigator.geolocation.watchPosition(
-          (pos) => {
-            console.log('Actualización GPS REAL:', pos.coords);
-            handleSuccess(pos);
-          },
+          handleSuccess,
           handleError,
-          gpsOptions
+          options
         );
         
         setWatchId(id);
+        setState(prev => ({
+          ...prev,
+          isTransmitting: true,
+          error: null,
+        }));
       },
-      (error) => {
-        console.error('Error obteniendo GPS:', error);
-        handleError(error);
-      },
-      gpsOptions
+      handleError,
+      options
     );
   }, [state.isSupported, state.isTransmitting, enableHighAccuracy, timeout, maximumAge, handleSuccess, handleError]);
 
