@@ -94,9 +94,9 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
     }
 
     const options: PositionOptions = {
-      enableHighAccuracy,
-      timeout,
-      maximumAge,
+      enableHighAccuracy: true,
+      timeout: 15000,
+      maximumAge: 0, // Siempre obtener ubicación fresca
     };
 
     setState(prev => ({
@@ -108,13 +108,16 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
     // Get current position first
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        console.log('Got initial location:', position.coords);
+        console.log('Ubicación inicial obtenida:', position.coords);
+        console.log('Precisión:', position.coords.accuracy, 'metros');
         handleSuccess(position);
         
-        // Start watching position
+        // Start watching position con intervalo más frecuente
         const id = navigator.geolocation.watchPosition(
           (pos) => {
-            console.log('Location update:', pos.coords);
+            console.log('Actualización de ubicación:', pos.coords);
+            console.log('Precisión:', pos.coords.accuracy, 'metros');
+            console.log('Timestamp:', new Date(pos.timestamp).toLocaleString());
             handleSuccess(pos);
           },
           handleError,

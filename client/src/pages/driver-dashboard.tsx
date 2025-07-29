@@ -49,7 +49,8 @@ export default function DriverDashboard() {
   } = useGeolocation({
     onLocationUpdate: (coords) => {
       if (isTransmitting && currentUser) {
-        console.log('Sending location update:', coords);
+        const timestamp = new Date().toISOString();
+        console.log(`Nueva ubicación obtenida [${timestamp}]:`, coords);
         
         // Send location update via API
         apiRequest("POST", "/api/locations", {
@@ -58,9 +59,9 @@ export default function DriverDashboard() {
           longitude: coords.longitude.toString(),
           isTransmitting: true,
         }).then(response => {
-          console.log('Location sent successfully:', response);
+          console.log(`Ubicación enviada exitosamente [${timestamp}]:`, response);
         }).catch(error => {
-          console.error('Error sending location:', error);
+          console.error(`Error enviando ubicación [${timestamp}]:`, error);
         });
 
         // Also send via WebSocket for real-time updates
@@ -71,6 +72,7 @@ export default function DriverDashboard() {
             latitude: coords.latitude.toString(),
             longitude: coords.longitude.toString(),
             isTransmitting: true,
+            timestamp: timestamp
           }
         });
       }
@@ -108,6 +110,7 @@ export default function DriverDashboard() {
     }
 
     if (!isTransmitting) {
+      console.log('Iniciando transmisión de ubicación...');
       startTracking();
       setIsTransmitting(true);
       
@@ -122,9 +125,10 @@ export default function DriverDashboard() {
 
       toast({
         title: "Transmisión iniciada",
-        description: "Su ubicación se está compartiendo cada 30 segundos.",
+        description: "Su ubicación se está compartiendo en tiempo real.",
       });
     } else {
+      console.log('Deteniendo transmisión de ubicación...');
       stopTracking();
       setIsTransmitting(false);
       
@@ -134,6 +138,16 @@ export default function DriverDashboard() {
           type: 'transmissionStatus',
           driverId: currentUser.id,
           isTransmitting: false
+        });
+        
+        // También actualizar el estado en la base de datos
+        apiRequest("POST", "/api/locations", {
+          driverId: currentUser.id,
+          latitude: coordinates?.latitude.toString() || "0",
+          longitude: coordinates?.longitude.toString() || "0",
+          isTransmitting: false,
+        }).catch(error => {
+          console.error('Error updating transmission status:', error);
         });
       }
 
@@ -150,6 +164,49 @@ export default function DriverDashboard() {
       setIsTransmitting(false);
     }
     authManager.logout();
+  };
+
+  // Función para forzar una obtención de ubicación nueva
+  const forceLocationUpdate = () => {
+    if (!currentUser) return;
+    
+    console.log('Forzando obtención de nueva ubicación...');
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const coords = position.coords;
+        const timestamp = new Date().toISOString();
+        console.log(`Ubicación forzada obtenida [${timestamp}]:`, coords);
+        
+        // Enviar inmediatamente via API
+        apiRequest("POST", "/api/locations", {
+          driverId: currentUser.id,
+          latitude: coords.latitude.toString(),
+          longitude: coords.longitude.toString(),
+          isTransmitting: true,
+        }).then(response => {
+          console.log('Ubicación forzada enviada:', response);
+          toast({
+            title: "Ubicación actualizada",
+            description: `Nueva posición: ${coords.latitude.toFixed(4)}, ${coords.longitude.toFixed(4)}`,
+          });
+        }).catch(error => {
+          console.error('Error enviando ubicación forzada:', error);
+        });
+      },
+      (error) => {
+        console.error('Error obteniendo ubicación forzada:', error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "No se pudo obtener la ubicación actual",
+        });
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0 // Siempre fresco
+      }
+    );
   };
 
   // Calculate remaining time in shift
@@ -275,6 +332,19 @@ export default function DriverDashboard() {
               <p className="text-sm text-red-500 mt-2">
                 Su navegador no soporta geolocalización
               </p>
+            )}
+
+            {/* Botón para forzar actualización de ubicación */}
+            {isSupported && (
+              <Button
+                onClick={forceLocationUpdate}
+                variant="outline"
+                size="sm"
+                className="mt-4 mr-2"
+              >
+                <MapPin className="w-4 h-4 mr-2" />
+                Obtener Ubicación Actual
+              </Button>
             )}
 
             <div className="mt-4 flex items-center justify-center space-x-4 text-sm">
