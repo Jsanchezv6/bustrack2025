@@ -41,6 +41,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Verificar sesión
+  app.post("/api/auth/verify", async (req, res) => {
+    try {
+      const { userId } = req.body;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(401).json({ message: "Sesión inválida" });
+      }
+      
+      res.json({ valid: true });
+    } catch (error) {
+      res.status(401).json({ message: "Sesión inválida" });
+    }
+  });
+
   // Schedule routes
   app.get("/api/schedules", async (req, res) => {
     try {

@@ -2,11 +2,19 @@
 
 ## Overview
 
-This is a full-stack bus management system built with React, Express, and TypeScript. The application provides real-time location tracking for buses, schedule management, and driver assignments. It features separate dashboards for administrators and drivers, with WebSocket-based real-time communication for location updates.
+This is a full-stack bus management system built with React, Express, and TypeScript. The application provides real-time location tracking for buses, schedule management, and driver assignments. It features separate dashboards for administrators and drivers, with WebSocket-based real-time communication for location updates. The system now includes persistent user sessions and integrated Google Maps for real-time location visualization.
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+
+## Recent Changes (January 2025)
+
+✓ **Persistent Sessions**: Implemented localStorage-based session persistence to maintain login state across page refreshes
+✓ **Google Maps Integration**: Added interactive Google Maps component showing real-time driver locations
+✓ **Real-time Updates**: Enhanced WebSocket functionality with automatic cache invalidation for instant UI updates  
+✓ **Session Management**: Added session verification endpoint and improved authentication flow
+✓ **UI Improvements**: Added loading states and better error handling throughout the application
 
 ## System Architecture
 

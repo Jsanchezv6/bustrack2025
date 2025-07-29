@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { queryClient } from '@/lib/queryClient';
 
 interface WebSocketMessage {
   type: string;
@@ -39,6 +40,11 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
       try {
         const message: WebSocketMessage = JSON.parse(event.data);
         onMessage?.(message);
+        
+        // Invalidar cache para actualizaciones automáticas
+        if (message.type === 'locationUpdate') {
+          queryClient.invalidateQueries({ queryKey: ['/api/locations'] });
+        }
       } catch (error) {
         console.error('Error parsing WebSocket message:', error);
       }

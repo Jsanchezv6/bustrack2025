@@ -12,11 +12,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { authManager } from "@/lib/auth";
 import { Bus } from "lucide-react";
 
-interface LoginProps {
-  onLoginSuccess: () => void;
-}
-
-export default function Login({ onLoginSuccess }: LoginProps) {
+export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -39,8 +35,6 @@ export default function Login({ onLoginSuccess }: LoginProps) {
         title: "Inicio de sesión exitoso",
         description: `Bienvenido, ${user.fullName}`,
       });
-      
-      onLoginSuccess();
     } catch (error: any) {
       toast({
         variant: "destructive",
