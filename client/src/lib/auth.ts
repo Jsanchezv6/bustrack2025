@@ -22,13 +22,16 @@ class AuthManager {
   }
 
   setCurrentUser(user: AuthUser | null): void {
+    console.log('AuthManager - Estableciendo usuario:', user);
     this.currentUser = user;
     if (user) {
       // Guardar sesión en localStorage
       localStorage.setItem('busapp_user', JSON.stringify(user));
+      console.log('AuthManager - Usuario guardado en localStorage:', user.id);
     } else {
       // Eliminar sesión del localStorage
       localStorage.removeItem('busapp_user');
+      console.log('AuthManager - Sesión eliminada');
     }
     this.notifyListeners();
   }
@@ -37,7 +40,16 @@ class AuthManager {
     try {
       const storedUser = localStorage.getItem('busapp_user');
       if (storedUser) {
-        this.currentUser = JSON.parse(storedUser);
+        const user = JSON.parse(storedUser);
+        console.log('AuthManager - Cargando usuario desde localStorage:', user);
+        
+        // Verificar que el usuario tenga un ID válido
+        if (user && user.id && user.username) {
+          this.currentUser = user;
+        } else {
+          console.warn('AuthManager - Usuario inválido en localStorage, eliminando');
+          localStorage.removeItem('busapp_user');
+        }
       }
     } catch (error) {
       console.error('Error al cargar sesión:', error);
@@ -84,6 +96,7 @@ class AuthManager {
       });
       
       if (!response.ok) {
+        console.warn('AuthManager - Sesión inválida en servidor, cerrando sesión');
         this.logout();
         return false;
       }
@@ -93,6 +106,14 @@ class AuthManager {
       console.error('Error verificando sesión:', error);
       return true; // Mantener sesión en caso de error de red
     }
+  }
+
+  // Método para limpiar y revalidar localStorage
+  clearInvalidSession(): void {
+    console.log('AuthManager - Limpiando sesión inválida');
+    localStorage.removeItem('busapp_user');
+    this.currentUser = null;
+    this.notifyListeners();
   }
 }
 

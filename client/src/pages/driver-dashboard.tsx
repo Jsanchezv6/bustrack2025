@@ -26,6 +26,9 @@ export default function DriverDashboard() {
   const { toast } = useToast();
   const currentUser = authManager.getCurrentUser();
 
+  // Debug: Verificar usuario actual
+  console.log('Usuario actual en dashboard chofer:', currentUser);
+
   // WebSocket connection
   const { sendMessage, isConnected } = useWebSocket({
     onConnect: () => {
