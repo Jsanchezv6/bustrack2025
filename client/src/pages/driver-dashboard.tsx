@@ -88,16 +88,26 @@ export default function DriverDashboard() {
   });
 
   // Query for driver's current assignment
-  const { data: assignment, isLoading: assignmentLoading } = useQuery<Assignment>({
+  const { data: assignment, isLoading: assignmentLoading, error: assignmentError } = useQuery<Assignment>({
     queryKey: [`/api/assignments/driver/${currentUser?.id}`],
     enabled: !!currentUser?.id,
   });
 
+  // Debug assignment data
+  console.log('Assignment data:', assignment);
+  console.log('Assignment loading:', assignmentLoading);
+  console.log('Assignment error:', assignmentError);
+
   // Query for schedule details
-  const { data: schedule, isLoading: scheduleLoading } = useQuery<Schedule>({
+  const { data: schedule, isLoading: scheduleLoading, error: scheduleError } = useQuery<Schedule>({
     queryKey: [`/api/schedules/${assignment?.scheduleId}`],
     enabled: !!assignment?.scheduleId,
   });
+
+  // Debug schedule data
+  console.log('Schedule data:', schedule);
+  console.log('Schedule loading:', scheduleLoading);
+  console.log('Schedule error:', scheduleError);
 
   const handleToggleTransmission = () => {
     if (!isSupported) {
@@ -236,16 +246,7 @@ export default function DriverDashboard() {
     { name: "Universidad Nacional", type: "end" },
   ];
 
-  if (assignmentLoading || scheduleLoading) {
-    return (
-      <div className="min-h-screen bg-neutral flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-secondary mx-auto mb-4"></div>
-          <p>Cargando información del turno...</p>
-        </div>
-      </div>
-    );
-  }
+  // Ya no necesitamos este loading global, se maneja individualmente en cada sección
 
   return (
     <div className="min-h-screen bg-neutral">
@@ -357,7 +358,14 @@ export default function DriverDashboard() {
         </Card>
 
         {/* Current Assignment */}
-        {assignment && schedule ? (
+        {assignmentLoading ? (
+          <Card className="mb-8">
+            <CardContent className="p-6 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-secondary mx-auto mb-4"></div>
+              <p>Cargando información del turno...</p>
+            </CardContent>
+          </Card>
+        ) : assignment && schedule ? (
           <Card className="mb-8">
             <CardContent className="p-6">
               <h3 className="text-xl font-semibold text-gray-800 mb-4">Mi Turno Actual</h3>
@@ -369,6 +377,7 @@ export default function DriverDashboard() {
                   <div>
                     <h4 className="text-lg font-semibold">Ruta {schedule.routeName}</h4>
                     <p className="text-gray-600">Turno: {assignment.shiftStart} - {assignment.shiftEnd}</p>
+                    <p className="text-sm text-gray-500">Fecha: {assignment.assignedDate}</p>
                   </div>
                 </div>
 
@@ -378,8 +387,10 @@ export default function DriverDashboard() {
                     <span className="font-medium ml-2">{schedule.frequency} minutos</span>
                   </div>
                   <div>
-                    <span className="text-gray-600">Tiempo restante:</span>
-                    <span className="font-medium ml-2 text-green-600">{getRemainingTime()}</span>
+                    <span className="text-gray-600">Estado:</span>
+                    <span className={`font-medium ml-2 ${assignment.isActive ? 'text-green-600' : 'text-red-600'}`}>
+                      {assignment.isActive ? 'Activo' : 'Inactivo'}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -393,6 +404,11 @@ export default function DriverDashboard() {
               <p className="text-gray-600">
                 No tiene turnos asignados para hoy. Contacte con el administrador.
               </p>
+              {assignmentError && (
+                <p className="text-sm text-red-500 mt-2">
+                  Error: {String(assignmentError)}
+                </p>
+              )}
             </CardContent>
           </Card>
         )}
