@@ -222,12 +222,8 @@ export default function AdminDashboard() {
     return { ...assignment, driver, schedule };
   });
 
-  // Get available drivers (not assigned today)
-  const today = new Date().toISOString().split('T')[0];
-  const assignedDriverIds = assignments
-    .filter(a => a.assignedDate === today && a.isActive)
-    .map(a => a.driverId);
-  const availableDrivers = drivers.filter(d => !assignedDriverIds.includes(d.id));
+  // Get all drivers as available (allowing multiple assignments per driver)
+  const availableDrivers = drivers;
 
   // Stats
   const stats = {
