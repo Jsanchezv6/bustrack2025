@@ -138,24 +138,17 @@ export default function DriverDashboard() {
 
   // Query para obtener todos los turnos del día (cola de turnos)
   const { data: allTodayShifts = [], isLoading: allShiftsLoading } = useQuery<Assignment[]>({
-    queryKey: ['/api/assignments/driver', currentUser?.id],
+    queryKey: ['/api/assignments/driver', currentUser?.id, 'all'],
     queryFn: async () => {
       if (!currentUser?.id) return [];
       const response = await fetch(`/api/assignments/driver/${currentUser.id}`);
       if (!response.ok) {
         throw new Error(`Error loading all shifts: ${response.status}`);
       }
-      const assignments = await response.json();
-      // Filtrar solo los turnos de hoy
-      const today = new Date().toISOString().split('T')[0];
-      return assignments.filter((a: Assignment) => 
-        a.assignedDate === today && a.isActive
-      ).sort((a: Assignment, b: Assignment) => 
-        a.shiftStart.localeCompare(b.shiftStart)
-      );
+      return response.json();
     },
     enabled: !!currentUser?.id && showShiftQueue,
-    refetchInterval: 60000,
+    refetchInterval: 30000, // Actualizar cada 30 segundos
   });
 
   // Debug data

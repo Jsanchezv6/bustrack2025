@@ -139,10 +139,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/assignments/driver/:driverId", async (req, res) => {
     try {
       const { driverId } = req.params;
-      const assignment = await storage.getActiveAssignmentByDriverId(driverId);
-      res.json(assignment);
+      const assignments = await storage.getTodayAssignmentsByDriverId(driverId);
+      res.json(assignments);
     } catch (error) {
-      res.status(500).json({ message: "Error al obtener asignación" });
+      res.status(500).json({ message: "Error al obtener asignaciones" });
     }
   });
 
