@@ -227,11 +227,10 @@ export class DatabaseStorage implements IStorage {
       return { current: null, next: null };
     }
 
-    // Usar hora local en lugar de UTC
+    // Usar zona horaria de Guatemala (GMT-6)
     const now = new Date();
-    // Ajustar a la zona horaria local (asumiendo GMT-6 para Centroamérica)
-    const localTime = new Date(now.getTime() - (6 * 60 * 60 * 1000));
-    const currentTime = `${String(localTime.getHours()).padStart(2, '0')}:${String(localTime.getMinutes()).padStart(2, '0')}`;
+    const guatemalaTime = new Date(now.toLocaleString("en-US", {timeZone: "America/Guatemala"}));
+    const currentTime = `${String(guatemalaTime.getHours()).padStart(2, '0')}:${String(guatemalaTime.getMinutes()).padStart(2, '0')}`;
     
 
     

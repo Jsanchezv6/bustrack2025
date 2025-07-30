@@ -12,7 +12,7 @@ Preferred communication style: Simple, everyday language.
 
 ✓ **Campo "Frecuencia" Eliminado**: Removido campo innecesario de frecuencia del esquema de horarios y todos los componentes relacionados
 ✓ **Panel "Mi Turno Siguiente" Corregido**: Solucionado problema crítico de zona horaria que causaba mal funcionamiento del panel
-✓ **Zona Horaria Local**: Implementado ajuste automático de UTC a hora local (GMT-6) para cálculos correctos de turnos
+✓ **Zona Horaria Guatemala**: Implementado uso correcto de zona horaria "America/Guatemala" para cálculos precisos de turnos
 ✓ **Lógica de Turnos Depurada**: Corregido algoritmo que incorrectamente devolvía turnos pasados como "próximos"
 ✓ **Cola de Turnos Corregida**: Backend ahora devuelve correctamente TODOS los turnos del chofer para mostrar cola completa
 ✓ **Sistema de Múltiples Turnos**: Implementado sistema para asignar múltiples turnos por chofer con restablecimiento diario automático
