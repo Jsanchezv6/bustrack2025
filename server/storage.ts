@@ -203,6 +203,60 @@ export class DatabaseStorage implements IStorage {
     return assignment || undefined;
   }
 
+  // Método para obtener todos los turnos activos de un chofer para hoy
+  async getTodayAssignmentsByDriverId(driverId: string): Promise<Assignment[]> {
+    const today = new Date().toISOString().split('T')[0];
+    return await db
+      .select()
+      .from(assignments)
+      .where(
+        and(
+          eq(assignments.driverId, driverId),
+          eq(assignments.isActive, true),
+          eq(assignments.assignedDate, today)
+        )
+      )
+      .orderBy(assignments.shiftStart);
+  }
+
+  // Método para obtener turno actual y siguiente
+  async getCurrentAndNextShifts(driverId: string): Promise<{ current: Assignment | null, next: Assignment | null }> {
+    const todayAssignments = await this.getTodayAssignmentsByDriverId(driverId);
+    
+    if (todayAssignments.length === 0) {
+      return { current: null, next: null };
+    }
+
+    const now = new Date();
+    const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    
+    let current: Assignment | null = null;
+    let next: Assignment | null = null;
+
+    // Buscar turno actual (donde la hora actual está entre shiftStart y shiftEnd)
+    for (const assignment of todayAssignments) {
+      if (currentTime >= assignment.shiftStart && currentTime <= assignment.shiftEnd) {
+        current = assignment;
+        break;
+      }
+    }
+
+    // Buscar siguiente turno (el primer turno que inicia después de la hora actual)
+    for (const assignment of todayAssignments) {
+      if (assignment.shiftStart > currentTime) {
+        next = assignment;
+        break;
+      }
+    }
+
+    // Si no hay turno actual, el siguiente turno disponible se convierte en el "próximo"
+    if (!current && todayAssignments.length > 0) {
+      next = todayAssignments.find(assignment => assignment.shiftStart > currentTime) || todayAssignments[0];
+    }
+
+    return { current, next };
+  }
+
   async createAssignment(insertAssignment: InsertAssignment): Promise<Assignment> {
     const [assignment] = await db
       .insert(assignments)

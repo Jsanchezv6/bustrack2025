@@ -10,6 +10,10 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (July 2025)
 
+✓ **Sistema de Múltiples Turnos**: Implementado sistema para asignar múltiples turnos por chofer con restablecimiento diario automático
+✓ **Panel Mejorado del Chofer**: Agregadas secciones "Mi Turno Actual" y "Mi Turno Siguiente" para mostrar información de turnos múltiples
+✓ **Endpoint de Turnos**: Creado `/api/assignments/driver/:driverId/shifts` para obtener turno actual y siguiente basado en la hora
+✓ **Lógica de Turnos Inteligente**: Sistema que determina automáticamente cuál es el turno actual y próximo según la hora del día
 ✓ **Sistema de Gestión de Usuarios**: Implementado sistema completo para crear, editar y eliminar usuarios (administradores y choferes)
 ✓ **Nueva Pestaña "Usuarios"**: Agregada pestaña en el panel administrativo con lista completa de usuarios y formularios de gestión
 ✓ **Mejoras en Ubicaciones**: Corregidos problemas de transmisión de ubicaciones desde el panel de chofer

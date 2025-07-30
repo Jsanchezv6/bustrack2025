@@ -146,6 +146,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Nuevo endpoint para obtener turnos actual y siguiente
+  app.get("/api/assignments/driver/:driverId/shifts", async (req, res) => {
+    try {
+      const { driverId } = req.params;
+      const shifts = await storage.getCurrentAndNextShifts(driverId);
+      res.json(shifts);
+    } catch (error) {
+      console.error('Error getting driver shifts:', error);
+      res.status(500).json({ message: "Error al obtener turnos del chofer" });
+    }
+  });
+
   app.post("/api/assignments", async (req, res) => {
     try {
       const assignmentData = insertAssignmentSchema.parse(req.body);

@@ -87,35 +87,56 @@ export default function DriverDashboard() {
     }
   });
 
-  // Query for driver's current assignment
-  const { data: assignment, isLoading: assignmentLoading, error: assignmentError } = useQuery<Assignment>({
-    queryKey: [`/api/assignments/driver/${currentUser?.id}`],
-    enabled: !!currentUser?.id,
-  });
-
-  // Debug assignment data
-  console.log('Assignment data:', assignment);
-  console.log('Assignment loading:', assignmentLoading);
-  console.log('Assignment error:', assignmentError);
-
-  // Query for schedule details
-  const { data: schedule, isLoading: scheduleLoading, error: scheduleError } = useQuery<Schedule>({
-    queryKey: ['/api/schedules', assignment?.scheduleId],
+  // Query para obtener turnos actual y siguiente
+  const { data: shifts, isLoading: shiftsLoading, error: shiftsError } = useQuery<{
+    current: Assignment | null,
+    next: Assignment | null
+  }>({
+    queryKey: ['/api/assignments/driver', currentUser?.id, 'shifts'],
     queryFn: async () => {
-      if (!assignment?.scheduleId) return null;
-      const response = await fetch(`/api/schedules/${assignment.scheduleId}`);
+      if (!currentUser?.id) return { current: null, next: null };
+      const response = await fetch(`/api/assignments/driver/${currentUser.id}/shifts`);
       if (!response.ok) {
-        throw new Error(`Error loading schedule: ${response.status}`);
+        throw new Error(`Error loading shifts: ${response.status}`);
       }
       return response.json();
     },
-    enabled: !!assignment?.scheduleId,
+    enabled: !!currentUser?.id,
+    refetchInterval: 60000, // Refrescar cada minuto para actualizar turnos
   });
 
-  // Debug schedule data
-  console.log('Schedule data:', schedule);
-  console.log('Schedule loading:', scheduleLoading);
-  console.log('Schedule error:', scheduleError);
+  // Query para schedule del turno actual
+  const { data: currentSchedule, isLoading: currentScheduleLoading } = useQuery<Schedule>({
+    queryKey: ['/api/schedules', shifts?.current?.scheduleId],
+    queryFn: async () => {
+      if (!shifts?.current?.scheduleId) return null;
+      const response = await fetch(`/api/schedules/${shifts.current.scheduleId}`);
+      if (!response.ok) {
+        throw new Error(`Error loading current schedule: ${response.status}`);
+      }
+      return response.json();
+    },
+    enabled: !!shifts?.current?.scheduleId,
+  });
+
+  // Query para schedule del turno siguiente
+  const { data: nextSchedule, isLoading: nextScheduleLoading } = useQuery<Schedule>({
+    queryKey: ['/api/schedules', shifts?.next?.scheduleId],
+    queryFn: async () => {
+      if (!shifts?.next?.scheduleId) return null;
+      const response = await fetch(`/api/schedules/${shifts.next.scheduleId}`);
+      if (!response.ok) {
+        throw new Error(`Error loading next schedule: ${response.status}`);
+      }
+      return response.json();
+    },
+    enabled: !!shifts?.next?.scheduleId,
+  });
+
+  // Debug data
+  console.log('Shifts data:', shifts);
+  console.log('Current schedule:', currentSchedule);
+  console.log('Next schedule:', nextSchedule);
 
   const handleToggleTransmission = () => {
     if (!isSupported) {
@@ -227,12 +248,12 @@ export default function DriverDashboard() {
     );
   };
 
-  // Calculate remaining time in shift
+  // Calculate remaining time in current shift
   const getRemainingTime = () => {
-    if (!assignment) return null;
+    if (!shifts?.current) return null;
     
     const now = new Date();
-    const [endHour, endMinute] = assignment.shiftEnd.split(':').map(Number);
+    const [endHour, endMinute] = shifts.current.shiftEnd.split(':').map(Number);
     const endTime = new Date();
     endTime.setHours(endHour, endMinute, 0, 0);
     
@@ -365,56 +386,100 @@ export default function DriverDashboard() {
           </CardContent>
         </Card>
 
-        {/* Current Assignment */}
-        {assignmentLoading ? (
-          <Card className="mb-8">
-            <CardContent className="p-6 text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-secondary mx-auto mb-4"></div>
-              <p>Cargando información del turno...</p>
-            </CardContent>
-          </Card>
-        ) : assignment && schedule ? (
+        {/* Turno Actual */}
+        {shifts?.current && currentSchedule && (
           <Card className="mb-8">
             <CardContent className="p-6">
               <h3 className="text-xl font-semibold text-gray-800 mb-4">Mi Turno Actual</h3>
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="flex items-center mb-4">
-                  <div className="bg-primary text-white rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold mr-4">
-                    {schedule.routeNumber}
+                  <div className="bg-green-600 text-white rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold mr-4">
+                    {currentSchedule.routeNumber}
                   </div>
                   <div>
-                    <h4 className="text-lg font-semibold">Ruta {schedule.routeName}</h4>
-                    <p className="text-gray-600">Turno: {assignment.shiftStart} - {assignment.shiftEnd}</p>
-                    <p className="text-sm text-gray-500">Fecha: {assignment.assignedDate}</p>
+                    <h4 className="text-lg font-semibold">Ruta {currentSchedule.routeName}</h4>
+                    <p className="text-gray-600">Turno: {shifts.current.shiftStart} - {shifts.current.shiftEnd}</p>
+                    <p className="text-sm text-gray-500">Fecha: {shifts.current.assignedDate}</p>
+                    {getRemainingTime() && (
+                      <p className="text-sm text-blue-600 font-medium">Tiempo restante: {getRemainingTime()}</p>
+                    )}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="text-gray-600">Frecuencia:</span>
-                    <span className="font-medium ml-2">{schedule.frequency} minutos</span>
+                    <span className="font-medium ml-2">{currentSchedule.frequency} minutos</span>
                   </div>
                   <div>
                     <span className="text-gray-600">Estado:</span>
-                    <span className={`font-medium ml-2 ${assignment.isActive ? 'text-green-600' : 'text-red-600'}`}>
-                      {assignment.isActive ? 'Activo' : 'Inactivo'}
+                    <span className={`font-medium ml-2 ${shifts.current.isActive ? 'text-green-600' : 'text-red-600'}`}>
+                      {shifts.current.isActive ? 'Activo' : 'Inactivo'}
                     </span>
                   </div>
                 </div>
               </div>
             </CardContent>
           </Card>
-        ) : (
+        )}
+
+        {/* Turno Siguiente */}
+        {shifts?.next && nextSchedule && (
+          <Card className="mb-8">
+            <CardContent className="p-6">
+              <h3 className="text-xl font-semibold text-gray-800 mb-4">Mi Turno Siguiente</h3>
+              <div className="bg-blue-50 rounded-lg p-4">
+                <div className="flex items-center mb-4">
+                  <div className="bg-blue-600 text-white rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold mr-4">
+                    {nextSchedule.routeNumber}
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-semibold">Ruta {nextSchedule.routeName}</h4>
+                    <p className="text-gray-600">Turno: {shifts.next.shiftStart} - {shifts.next.shiftEnd}</p>
+                    <p className="text-sm text-gray-500">Fecha: {shifts.next.assignedDate}</p>
+                    <p className="text-sm text-blue-600 font-medium">Inicia a las {shifts.next.shiftStart}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-gray-600">Frecuencia:</span>
+                    <span className="font-medium ml-2">{nextSchedule.frequency} minutos</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Estado:</span>
+                    <span className={`font-medium ml-2 ${shifts.next.isActive ? 'text-green-600' : 'text-red-600'}`}>
+                      {shifts.next.isActive ? 'Activo' : 'Inactivo'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Loading state */}
+        {shiftsLoading && (
+          <Card className="mb-8">
+            <CardContent className="p-6 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-secondary mx-auto mb-4"></div>
+              <p>Cargando información de turnos...</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* No shifts message */}
+        {!shifts?.current && !shifts?.next && !shiftsLoading && (
           <Card className="mb-8">
             <CardContent className="p-6 text-center">
               <Clock className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">Sin Turno Asignado</h3>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">Sin Turnos Asignados</h3>
               <p className="text-gray-600">
                 No tiene turnos asignados para hoy. Contacte con el administrador.
               </p>
-              {assignmentError && (
+              {shiftsError && (
                 <p className="text-sm text-red-500 mt-2">
-                  Error: {String(assignmentError)}
+                  Error: {String(shiftsError)}
                 </p>
               )}
             </CardContent>
