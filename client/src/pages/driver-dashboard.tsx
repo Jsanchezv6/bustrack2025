@@ -438,31 +438,44 @@ export default function DriverDashboard() {
         )}
 
         {/* Turno Siguiente */}
-        {shifts?.next && nextSchedule && (
+        {shifts?.next && (
           <Card className="mb-8">
             <CardContent className="p-6">
               <h3 className="text-xl font-semibold text-gray-800 mb-4">Mi Turno Siguiente</h3>
               <div className="bg-blue-50 rounded-lg p-4">
-                <div className="flex items-center mb-4">
-                  <div className="bg-blue-600 text-white rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold mr-4">
-                    {nextSchedule.routeNumber}
+                {nextScheduleLoading ? (
+                  <div className="text-center py-4">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                    <p className="text-sm text-gray-600">Cargando información de la ruta...</p>
                   </div>
-                  <div>
-                    <h4 className="text-lg font-semibold">Ruta {nextSchedule.routeName}</h4>
-                    <p className="text-gray-600">Turno: {shifts.next.shiftStart} - {shifts.next.shiftEnd}</p>
-                    <p className="text-sm text-gray-500">Fecha: {shifts.next.assignedDate}</p>
-                    <p className="text-sm text-blue-600 font-medium">Inicia a las {shifts.next.shiftStart}</p>
-                  </div>
-                </div>
+                ) : nextSchedule ? (
+                  <>
+                    <div className="flex items-center mb-4">
+                      <div className="bg-blue-600 text-white rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold mr-4">
+                        {nextSchedule.routeNumber}
+                      </div>
+                      <div>
+                        <h4 className="text-lg font-semibold">Ruta {nextSchedule.routeName}</h4>
+                        <p className="text-gray-600">Turno: {shifts.next.shiftStart} - {shifts.next.shiftEnd}</p>
+                        <p className="text-sm text-gray-500">Fecha: {shifts.next.assignedDate}</p>
+                        <p className="text-sm text-blue-600 font-medium">Inicia a las {shifts.next.shiftStart}</p>
+                      </div>
+                    </div>
 
-                <div className="text-sm">
-                  <div>
-                    <span className="text-gray-600">Estado:</span>
-                    <span className={`font-medium ml-2 ${shifts.next.isActive ? 'text-green-600' : 'text-red-600'}`}>
-                      {shifts.next.isActive ? 'Activo' : 'Inactivo'}
-                    </span>
+                    <div className="text-sm">
+                      <div>
+                        <span className="text-gray-600">Estado:</span>
+                        <span className={`font-medium ml-2 ${shifts.next.isActive ? 'text-green-600' : 'text-red-600'}`}>
+                          {shifts.next.isActive ? 'Activo' : 'Inactivo'}
+                        </span>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center py-4">
+                    <p className="text-sm text-gray-600">Error cargando información de la ruta</p>
                   </div>
-                </div>
+                )}
               </div>
             </CardContent>
           </Card>
