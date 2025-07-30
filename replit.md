@@ -14,6 +14,9 @@ Preferred communication style: Simple, everyday language.
 ✓ **Panel Mejorado del Chofer**: Agregadas secciones "Mi Turno Actual" y "Mi Turno Siguiente" para mostrar información de turnos múltiples
 ✓ **Endpoint de Turnos**: Creado `/api/assignments/driver/:driverId/shifts` para obtener turno actual y siguiente basado en la hora
 ✓ **Lógica de Turnos Inteligente**: Sistema que determina automáticamente cuál es el turno actual y próximo según la hora del día
+✓ **Choferes Siempre Disponibles**: Eliminado filtro restrictivo para permitir asignar múltiples turnos al mismo chofer
+✓ **Botón "Cola de Turnos"**: Agregado botón en panel del chofer para mostrar todos los turnos programados del día con estados dinámicos
+✓ **Vista Cola Completa**: Interface completa mostrando turnos pendientes, en curso y completados con indicadores visuales
 ✓ **Sistema de Gestión de Usuarios**: Implementado sistema completo para crear, editar y eliminar usuarios (administradores y choferes)
 ✓ **Nueva Pestaña "Usuarios"**: Agregada pestaña en el panel administrativo con lista completa de usuarios y formularios de gestión
 ✓ **Mejoras en Ubicaciones**: Corregidos problemas de transmisión de ubicaciones desde el panel de chofer

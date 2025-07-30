@@ -18,11 +18,14 @@ import {
   Route,
   Circle,
   CheckCircle,
-  StopCircle
+  StopCircle,
+  List,
+  Calendar
 } from "lucide-react";
 
 export default function DriverDashboard() {
   const [isTransmitting, setIsTransmitting] = useState(false);
+  const [showShiftQueue, setShowShiftQueue] = useState(false);
   const { toast } = useToast();
   const currentUser = authManager.getCurrentUser();
 
@@ -131,6 +134,28 @@ export default function DriverDashboard() {
       return response.json();
     },
     enabled: !!shifts?.next?.scheduleId,
+  });
+
+  // Query para obtener todos los turnos del día (cola de turnos)
+  const { data: allTodayShifts = [], isLoading: allShiftsLoading } = useQuery<Assignment[]>({
+    queryKey: ['/api/assignments/driver', currentUser?.id],
+    queryFn: async () => {
+      if (!currentUser?.id) return [];
+      const response = await fetch(`/api/assignments/driver/${currentUser.id}`);
+      if (!response.ok) {
+        throw new Error(`Error loading all shifts: ${response.status}`);
+      }
+      const assignments = await response.json();
+      // Filtrar solo los turnos de hoy
+      const today = new Date().toISOString().split('T')[0];
+      return assignments.filter((a: Assignment) => 
+        a.assignedDate === today && a.isActive
+      ).sort((a: Assignment, b: Assignment) => 
+        a.shiftStart.localeCompare(b.shiftStart)
+      );
+    },
+    enabled: !!currentUser?.id && showShiftQueue,
+    refetchInterval: 60000,
   });
 
   // Debug data
@@ -464,6 +489,100 @@ export default function DriverDashboard() {
             <CardContent className="p-6 text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-secondary mx-auto mb-4"></div>
               <p>Cargando información de turnos...</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Botón Cola de Turnos */}
+        {(shifts?.current || shifts?.next) && (
+          <Card className="mb-8">
+            <CardContent className="p-6 text-center">
+              <Button
+                onClick={() => setShowShiftQueue(!showShiftQueue)}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3"
+              >
+                <List className="w-5 h-5 mr-2" />
+                {showShiftQueue ? 'Ocultar Cola de Turnos' : 'Ver Cola de Turnos'}
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Modal/Sección Cola de Turnos */}
+        {showShiftQueue && (
+          <Card className="mb-8">
+            <CardContent className="p-6">
+              <div className="flex items-center mb-4">
+                <Calendar className="w-6 h-6 text-purple-600 mr-2" />
+                <h3 className="text-xl font-semibold text-gray-800">Cola de Turnos - Hoy</h3>
+              </div>
+              
+              {allShiftsLoading ? (
+                <div className="text-center py-4">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
+                  <p>Cargando turnos...</p>
+                </div>
+              ) : allTodayShifts.length === 0 ? (
+                <p className="text-gray-500 text-center py-4">No hay turnos programados para hoy</p>
+              ) : (
+                <div className="space-y-3">
+                  {allTodayShifts.map((shift, index) => {
+                    const now = new Date();
+                    const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                    const isCurrentShift = currentTime >= shift.shiftStart && currentTime <= shift.shiftEnd;
+                    const isCompleted = currentTime > shift.shiftEnd;
+                    const isPending = currentTime < shift.shiftStart;
+                    
+                    return (
+                      <div key={shift.id} className={`border rounded-lg p-4 ${
+                        isCurrentShift ? 'bg-green-50 border-green-200' : 
+                        isCompleted ? 'bg-gray-50 border-gray-200' : 
+                        'bg-blue-50 border-blue-200'
+                      }`}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center">
+                            <div className={`rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3 ${
+                              isCurrentShift ? 'bg-green-600 text-white' : 
+                              isCompleted ? 'bg-gray-400 text-white' : 
+                              'bg-blue-600 text-white'
+                            }`}>
+                              {index + 1}
+                            </div>
+                            <div>
+                              <p className="font-medium">
+                                Turno {shift.shiftStart} - {shift.shiftEnd}
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                Fecha: {shift.assignedDate}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            {isCurrentShift && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
+                                <CheckCircle className="w-3 h-3 mr-1" />
+                                En Curso
+                              </span>
+                            )}
+                            {isCompleted && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-800">
+                                <StopCircle className="w-3 h-3 mr-1" />
+                                Completado
+                              </span>
+                            )}
+                            {isPending && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                                <Clock className="w-3 h-3 mr-1" />
+                                Pendiente
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
