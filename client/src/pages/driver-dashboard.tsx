@@ -100,7 +100,15 @@ export default function DriverDashboard() {
 
   // Query for schedule details
   const { data: schedule, isLoading: scheduleLoading, error: scheduleError } = useQuery<Schedule>({
-    queryKey: [`/api/schedules/${assignment?.scheduleId}`],
+    queryKey: ['/api/schedules', assignment?.scheduleId],
+    queryFn: async () => {
+      if (!assignment?.scheduleId) return null;
+      const response = await fetch(`/api/schedules/${assignment.scheduleId}`);
+      if (!response.ok) {
+        throw new Error(`Error loading schedule: ${response.status}`);
+      }
+      return response.json();
+    },
     enabled: !!assignment?.scheduleId,
   });
 

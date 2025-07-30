@@ -69,6 +69,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/schedules/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const schedule = await storage.getSchedule(id);
+      
+      if (!schedule) {
+        return res.status(404).json({ message: "Horario no encontrado" });
+      }
+      
+      res.json(schedule);
+    } catch (error) {
+      console.error('Error getting schedule by ID:', error);
+      res.status(500).json({ message: "Error al obtener horario" });
+    }
+  });
+
   app.post("/api/schedules", async (req, res) => {
     try {
       const scheduleData = insertScheduleSchema.parse(req.body);
