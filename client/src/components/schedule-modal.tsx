@@ -28,7 +28,6 @@ export function ScheduleModal({ isOpen, onClose, schedule }: ScheduleModalProps)
       routeNumber: schedule?.routeNumber || 1,
       startTime: schedule?.startTime || "06:00",
       endTime: schedule?.endTime || "22:00",
-      frequency: schedule?.frequency || 15,
       isActive: schedule?.isActive ?? true,
     },
   });
@@ -178,32 +177,7 @@ export function ScheduleModal({ isOpen, onClose, schedule }: ScheduleModalProps)
               />
             </div>
 
-            <FormField
-              control={form.control}
-              name="frequency"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Frecuencia (minutos)</FormLabel>
-                  <Select 
-                    onValueChange={(value) => field.onChange(parseInt(value))} 
-                    defaultValue={field.value?.toString()}
-                  >
-                    <FormControl>
-                      <SelectTrigger disabled={isLoading}>
-                        <SelectValue placeholder="Seleccione la frecuencia" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="10">10 minutos</SelectItem>
-                      <SelectItem value="15">15 minutos</SelectItem>
-                      <SelectItem value="20">20 minutos</SelectItem>
-                      <SelectItem value="30">30 minutos</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+
 
             <div className="flex space-x-4">
               <Button 

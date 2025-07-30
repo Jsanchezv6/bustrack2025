@@ -377,7 +377,6 @@ export default function AdminDashboard() {
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ruta</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hora Inicio</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hora Fin</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Frecuencia</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
                     </tr>
@@ -385,11 +384,11 @@ export default function AdminDashboard() {
                   <tbody className="divide-y divide-gray-200">
                     {schedulesLoading ? (
                       <tr>
-                        <td colSpan={6} className="px-6 py-4 text-center">Cargando...</td>
+                        <td colSpan={5} className="px-6 py-4 text-center">Cargando...</td>
                       </tr>
                     ) : schedules.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                        <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
                           No hay horarios registrados
                         </td>
                       </tr>
@@ -406,7 +405,6 @@ export default function AdminDashboard() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-gray-900">{schedule.startTime}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-gray-900">{schedule.endTime}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-gray-900">{schedule.frequency} min</td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <Badge variant={schedule.isActive ? "default" : "secondary"}>
                               {schedule.isActive ? "Activo" : "Inactivo"}

@@ -424,11 +424,7 @@ export default function DriverDashboard() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-gray-600">Frecuencia:</span>
-                    <span className="font-medium ml-2">{currentSchedule.frequency} minutos</span>
-                  </div>
+                <div className="text-sm">
                   <div>
                     <span className="text-gray-600">Estado:</span>
                     <span className={`font-medium ml-2 ${shifts.current.isActive ? 'text-green-600' : 'text-red-600'}`}>
@@ -459,11 +455,7 @@ export default function DriverDashboard() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-gray-600">Frecuencia:</span>
-                    <span className="font-medium ml-2">{nextSchedule.frequency} minutos</span>
-                  </div>
+                <div className="text-sm">
                   <div>
                     <span className="text-gray-600">Estado:</span>
                     <span className={`font-medium ml-2 ${shifts.next.isActive ? 'text-green-600' : 'text-red-600'}`}>

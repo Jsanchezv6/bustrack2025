@@ -185,16 +185,12 @@ export function AssignmentModal({ isOpen, onClose, drivers, schedules }: Assignm
             {selectedSchedule && (
               <div className="bg-gray-50 rounded-lg p-4">
                 <h4 className="font-medium text-gray-800 mb-2">Información de la Ruta</h4>
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="text-sm">
                   <div>
                     <span className="text-gray-600">Horario de operación:</span>
                     <span className="ml-2 font-medium">
                       {selectedSchedule.startTime} - {selectedSchedule.endTime}
                     </span>
-                  </div>
-                  <div>
-                    <span className="text-gray-600">Frecuencia:</span>
-                    <span className="ml-2 font-medium">{selectedSchedule.frequency} minutos</span>
                   </div>
                 </div>
               </div>

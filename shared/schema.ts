@@ -19,7 +19,6 @@ export const schedules = pgTable("schedules", {
   routeNumber: integer("route_number").notNull(),
   startTime: text("start_time").notNull(), // HH:MM format
   endTime: text("end_time").notNull(), // HH:MM format
-  frequency: integer("frequency").notNull(), // minutes
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
 });

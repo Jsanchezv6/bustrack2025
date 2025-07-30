@@ -10,6 +10,8 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (July 2025)
 
+✓ **Campo "Frecuencia" Eliminado**: Removido campo innecesario de frecuencia del esquema de horarios y todos los componentes relacionados
+✓ **Cola de Turnos Corregida**: Backend ahora devuelve correctamente TODOS los turnos del chofer para mostrar cola completa
 ✓ **Sistema de Múltiples Turnos**: Implementado sistema para asignar múltiples turnos por chofer con restablecimiento diario automático
 ✓ **Panel Mejorado del Chofer**: Agregadas secciones "Mi Turno Actual" y "Mi Turno Siguiente" para mostrar información de turnos múltiples
 ✓ **Endpoint de Turnos**: Creado `/api/assignments/driver/:driverId/shifts` para obtener turno actual y siguiente basado en la hora
@@ -21,11 +23,11 @@ Preferred communication style: Simple, everyday language.
 ✓ **Nueva Pestaña "Usuarios"**: Agregada pestaña en el panel administrativo con lista completa de usuarios y formularios de gestión
 ✓ **Mejoras en Ubicaciones**: Corregidos problemas de transmisión de ubicaciones desde el panel de chofer
 ✓ **Botón "Localizar"**: Implementado botón para centrar el mapa en ubicaciones específicas de choferes
-✓ **Persistent Sessions**: Implemented localStorage-based session persistence to maintain login state across page refreshes
-✓ **Google Maps Integration**: Added interactive Google Maps component showing real-time driver locations
-✓ **Real-time Updates**: Enhanced WebSocket functionality with automatic cache invalidation for instant UI updates  
-✓ **Session Management**: Added session verification endpoint and improved authentication flow
-✓ **UI Improvements**: Added loading states and better error handling throughout the application
+✓ **Sesiones Persistentes**: Implementado sistema de sesiones basado en localStorage para mantener login activo
+✓ **Integración Google Maps**: Agregado componente interactivo de Google Maps mostrando ubicaciones en tiempo real
+✓ **Actualizaciones en Tiempo Real**: Mejorado WebSocket con invalidación automática de cache para actualizaciones instantáneas
+✓ **Gestión de Sesiones**: Agregado endpoint de verificación de sesión y flujo de autenticación mejorado
+✓ **Mejoras de UI**: Agregados estados de carga y mejor manejo de errores en toda la aplicación
 
 ## System Architecture
 
