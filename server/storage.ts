@@ -227,8 +227,13 @@ export class DatabaseStorage implements IStorage {
       return { current: null, next: null };
     }
 
+    // Usar hora local en lugar de UTC
     const now = new Date();
-    const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    // Ajustar a la zona horaria local (asumiendo GMT-6 para Centroamérica)
+    const localTime = new Date(now.getTime() - (6 * 60 * 60 * 1000));
+    const currentTime = `${String(localTime.getHours()).padStart(2, '0')}:${String(localTime.getMinutes()).padStart(2, '0')}`;
+    
+
     
     let current: Assignment | null = null;
     let next: Assignment | null = null;
