@@ -421,37 +421,7 @@ export default function DriverDashboard() {
           </Card>
         )}
 
-        {/* Route Information */}
-        {schedule && (
-          <Card>
-            <CardContent className="p-6">
-              <h3 className="text-xl font-semibold text-gray-800 mb-4">Información de Ruta</h3>
 
-              <div className="space-y-4">
-                {routeStops.map((stop, index) => (
-                  <div key={index} className="flex items-center space-x-4">
-                    <div className={`p-2 rounded-full ${
-                      stop.type === 'start' ? 'bg-green-100' :
-                      stop.type === 'end' ? 'bg-red-100' : 'bg-blue-100'
-                    }`}>
-                      {stop.type === 'start' && <CheckCircle className="text-green-600 w-5 h-5" />}
-                      {stop.type === 'end' && <StopCircle className="text-red-600 w-5 h-5" />}
-                      {stop.type === 'stop' && <Circle className="text-blue-600 w-3 h-3 fill-current" />}
-                    </div>
-                    <div>
-                      <p className="font-medium">{stop.name}</p>
-                      <p className="text-sm text-gray-600">
-                        {stop.type === 'start' && 'Punto de inicio'}
-                        {stop.type === 'end' && 'Destino final'}
-                        {stop.type === 'stop' && 'Parada intermedia'}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
     </div>
   );
