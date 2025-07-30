@@ -249,11 +249,6 @@ export class DatabaseStorage implements IStorage {
       }
     }
 
-    // Si no hay turno actual, el siguiente turno disponible se convierte en el "próximo"
-    if (!current && todayAssignments.length > 0) {
-      next = todayAssignments.find(assignment => assignment.shiftStart > currentTime) || todayAssignments[0];
-    }
-
     return { current, next };
   }
 
