@@ -8,7 +8,7 @@ This is a full-stack bus management system built with React, Express, and TypeSc
 
 Preferred communication style: Simple, everyday language.
 
-## Recent Changes (Agosto 2025)
+## Recent Changes (July 2025)
 
 ✓ **Campo "Frecuencia" Eliminado**: Removido campo innecesario de frecuencia del esquema de horarios y todos los componentes relacionados
 ✓ **Panel "Mi Turno Siguiente" Corregido**: Solucionado problema crítico de zona horaria que causaba mal funcionamiento del panel
@@ -31,10 +31,6 @@ Preferred communication style: Simple, everyday language.
 ✓ **Actualizaciones en Tiempo Real**: Mejorado WebSocket con invalidación automática de cache para actualizaciones instantáneas
 ✓ **Gestión de Sesiones**: Agregado endpoint de verificación de sesión y flujo de autenticación mejorado
 ✓ **Mejoras de UI**: Agregados estados de carga y mejor manejo de errores en toda la aplicación
-✓ **Choferes Únicos en Monitoreo**: Solucionado problema de choferes duplicados en panel "Estado de Choferes" - ahora cada chofer aparece una sola vez con contador de turnos
-✓ **Detección de Cierre de Página**: Implementado sistema para detener automáticamente transmisión cuando chofer cierra página web
-✓ **Timeout de Inactividad**: Agregado timeout de 2 minutos en servidor para desactivar transmisiones inactivas automáticamente
-✓ **Manejo de Desconexión**: Mejorado sistema de detección de desconexión con eventos beforeunload y visibilitychange
 
 ## System Architecture
 

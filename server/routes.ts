@@ -19,9 +19,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Store active WebSocket connections
   const driverConnections = new Map<string, WebSocket>();
-  
-  // Store timeout IDs for driver inactivity tracking
-  const inactivityTimeouts = new Map<string, NodeJS.Timeout>();
 
   // Authentication routes
   app.post("/api/auth/login", async (req, res) => {
@@ -268,32 +265,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('POST /api/locations - Datos validados:', locationData);
       const location = await storage.updateDriverLocation(locationData);
       console.log('POST /api/locations - Ubicación guardada:', location);
-      
-      // Si la transmisión se detiene, limpia el timeout de inactividad
-      if (!locationData.isTransmitting) {
-        clearTimeout(inactivityTimeouts.get(locationData.driverId));
-        inactivityTimeouts.delete(locationData.driverId);
-        console.log(`Timeout de inactividad limpiado para chofer ${locationData.driverId}`);
-      } else {
-        // Si está transmitiendo, configura timeout de inactividad de 2 minutos
-        clearTimeout(inactivityTimeouts.get(locationData.driverId));
-        const timeoutId = setTimeout(async () => {
-          console.log(`Timeout de inactividad para chofer ${locationData.driverId} - deteniendo transmisión automáticamente`);
-          try {
-            await storage.updateDriverLocation({
-              driverId: locationData.driverId,
-              latitude: locationData.latitude,
-              longitude: locationData.longitude,
-              isTransmitting: false
-            });
-            inactivityTimeouts.delete(locationData.driverId);
-          } catch (error) {
-            console.error('Error en timeout de inactividad:', error);
-          }
-        }, 120000); // 2 minutos
-        
-        inactivityTimeouts.set(locationData.driverId, timeoutId);
-      }
       
       // Broadcast location update to all admin connections
       const locationUpdate = {

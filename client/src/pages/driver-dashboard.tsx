@@ -151,81 +151,10 @@ export default function DriverDashboard() {
     refetchInterval: 30000, // Actualizar cada 30 segundos
   });
 
-  // Efecto para manejar el cierre de página y detener transmisión automáticamente
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      if (isTransmitting && currentUser) {
-        console.log('Página cerrándose - deteniendo transmisión...');
-        
-        // Detener inmediatamente la transmisión
-        stopTracking();
-        
-        // Usar fetch con keepalive para asegurar que el request llegue al cerrar página
-        fetch('/api/locations', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            driverId: currentUser.id,
-            latitude: coordinates?.latitude.toString() || "0",
-            longitude: coordinates?.longitude.toString() || "0",
-            isTransmitting: false,
-          }),
-          keepalive: true // Crítico para envíos al cerrar página
-        }).catch(err => console.error('Error enviando último estado:', err));
-      }
-    };
-
-    const handleVisibilityChange = () => {
-      if (document.hidden && isTransmitting && currentUser) {
-        console.log('Pestaña oculta - deteniendo transmisión...');
-        stopTransmissionSafely();
-      }
-    };
-
-    // Agregar listeners
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    // Cleanup
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [isTransmitting, currentUser, coordinates]);
-
   // Debug data
   console.log('Shifts data:', shifts);
   console.log('Current schedule:', currentSchedule);
   console.log('Next schedule:', nextSchedule);
-
-  // Función para detener transmisión de forma segura
-  const stopTransmissionSafely = async () => {
-    console.log('Deteniendo transmisión de forma segura...');
-    stopTracking();
-    setIsTransmitting(false);
-    
-    if (currentUser) {
-      // Notify via WebSocket if available
-      sendMessage({
-        type: 'transmissionStatus',
-        driverId: currentUser.id,
-        isTransmitting: false
-      });
-      
-      // Update database state
-      try {
-        await apiRequest("POST", "/api/locations", {
-          driverId: currentUser.id,
-          latitude: coordinates?.latitude.toString() || "0",
-          longitude: coordinates?.longitude.toString() || "0",
-          isTransmitting: false,
-        });
-        console.log('Estado de transmisión actualizado en base de datos');
-      } catch (error) {
-        console.error('Error actualizando estado de transmisión:', error);
-      }
-    }
-  };
 
   const handleToggleTransmission = () => {
     if (!isSupported) {
@@ -256,7 +185,28 @@ export default function DriverDashboard() {
         description: "Su ubicación se está compartiendo en tiempo real.",
       });
     } else {
-      stopTransmissionSafely();
+      console.log('Deteniendo transmisión de ubicación...');
+      stopTracking();
+      setIsTransmitting(false);
+      
+      // Notify server about transmission status
+      if (currentUser) {
+        sendMessage({
+          type: 'transmissionStatus',
+          driverId: currentUser.id,
+          isTransmitting: false
+        });
+        
+        // También actualizar el estado en la base de datos
+        apiRequest("POST", "/api/locations", {
+          driverId: currentUser.id,
+          latitude: coordinates?.latitude.toString() || "0",
+          longitude: coordinates?.longitude.toString() || "0",
+          isTransmitting: false,
+        }).catch(error => {
+          console.error('Error updating transmission status:', error);
+        });
+      }
 
       toast({
         title: "Transmisión detenida",
@@ -265,9 +215,10 @@ export default function DriverDashboard() {
     }
   };
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     if (isTransmitting) {
-      await stopTransmissionSafely();
+      stopTracking();
+      setIsTransmitting(false);
     }
     authManager.logout();
   };
