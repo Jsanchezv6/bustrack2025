@@ -222,6 +222,17 @@ export default function AdminDashboard() {
     return { ...assignment, driver, schedule };
   });
 
+  // Get unique drivers with their assignments (to avoid duplicates in monitoring)
+  const uniqueDriversWithAssignments = drivers.map(driver => {
+    const driverAssignments = assignmentsWithDrivers.filter(a => a.driverId === driver.id);
+    return {
+      driver,
+      assignments: driverAssignments,
+      // Use the first assignment for basic info display
+      firstAssignment: driverAssignments[0] || null
+    };
+  }).filter(item => item.assignments.length > 0); // Only show drivers with assignments
+
   // Get all drivers as available (allowing multiple assignments per driver)
   const availableDrivers = drivers;
 
@@ -549,20 +560,21 @@ export default function AdminDashboard() {
                 {/* Driver Status */}
                 <div className="space-y-4">
                   <h3 className="font-semibold text-gray-800">Estado de Choferes</h3>
-                  {assignmentsWithDrivers.map((assignment) => {
-                    const location = locations.find(l => l.driverId === assignment.driverId) || 
-                                   activeLocations.find(l => l.driverId === assignment.driverId);
-                    const isTransmitting = transmittingDrivers.has(assignment.driverId || '') || location?.isTransmitting || false;
+                  {uniqueDriversWithAssignments.map((driverItem) => {
+                    const { driver, assignments, firstAssignment } = driverItem;
+                    const location = locations.find(l => l.driverId === driver.id) || 
+                                   activeLocations.find(l => l.driverId === driver.id);
+                    const isTransmitting = transmittingDrivers.has(driver.id) || location?.isTransmitting || false;
                     
                     return (
                       <Card 
-                        key={assignment.id} 
+                        key={driver.id} 
                         className={`p-4 border-l-4 ${
                           isTransmitting ? 'border-green-500' : 'border-gray-300'
                         }`}
                       >
                         <div className="flex items-center justify-between mb-2">
-                          <span className="font-medium">{assignment.driver?.fullName}</span>
+                          <span className="font-medium">{driver.fullName}</span>
                           <span className={`flex items-center ${
                             isTransmitting ? 'text-green-600' : 'text-gray-500'
                           }`}>
@@ -570,9 +582,23 @@ export default function AdminDashboard() {
                             {isTransmitting ? 'Transmitiendo' : 'Desconectado'}
                           </span>
                         </div>
-                        <p className="text-sm text-gray-600">
-                          Ruta {assignment.schedule?.routeNumber} - {assignment.schedule?.routeName}
+                        
+                        {/* Mostrar número de turnos asignados */}
+                        <p className="text-sm text-gray-600 mb-1">
+                          {assignments.length === 1 ? 
+                            `1 turno asignado` : 
+                            `${assignments.length} turnos asignados`
+                          }
                         </p>
+                        
+                        {/* Mostrar información del primer turno o el más relevante */}
+                        {firstAssignment && (
+                          <p className="text-xs text-gray-500 mb-2">
+                            Ruta {firstAssignment.schedule?.routeNumber} - {firstAssignment.schedule?.routeName}
+                            {assignments.length > 1 && " (y otros)"}
+                          </p>
+                        )}
+                        
                         <p className="text-xs text-gray-500 mb-3">
                           {location && location.timestamp ? 
                             `Última actualización: ${new Date(location.timestamp).toLocaleTimeString()}` :
@@ -583,7 +609,7 @@ export default function AdminDashboard() {
                         {/* Botón Localizar */}
                         {location && isTransmitting && (
                           <Button
-                            onClick={() => locateDriver(assignment.driverId || '')}
+                            onClick={() => locateDriver(driver.id)}
                             size="sm"
                             variant="outline"
                             className="w-full text-xs"
@@ -596,7 +622,7 @@ export default function AdminDashboard() {
                     );
                   })}
 
-                  {assignmentsWithDrivers.length === 0 && (
+                  {uniqueDriversWithAssignments.length === 0 && (
                     <p className="text-gray-500">No hay choferes asignados</p>
                   )}
                 </div>
