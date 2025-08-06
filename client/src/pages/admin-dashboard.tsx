@@ -70,7 +70,16 @@ export default function AdminDashboard() {
         // Forzar actualización inmediata de ubicaciones cuando cambia estado
         queryClient.invalidateQueries({ queryKey: ['/api/locations'] });
         queryClient.refetchQueries({ queryKey: ['/api/locations'] });
-        console.log('WebSocket - Actualizando estado de transmisión');
+        
+        // También limpiar el estado local para forzar re-renderización
+        if (message.type === 'transmissionStopped') {
+          console.log('WebSocket - Removiendo chofer del estado local:', message.data.driverId);
+          setActiveLocations(prev => 
+            prev.filter(loc => loc.driverId !== message.data.driverId)
+          );
+        }
+        
+        console.log('WebSocket - Actualizando estado de transmisión:', message.type, message.data);
       }
     }
   });
@@ -573,8 +582,12 @@ export default function AdminDashboard() {
                   <h3 className="font-semibold text-gray-800">Estado de Choferes</h3>
                   {uniqueDriversWithAssignments.map((driverItem) => {
                     const { driver, assignments, firstAssignment } = driverItem;
-                    const location = locations.find(l => l.driverId === driver.id) || 
-                                   activeLocations.find(l => l.driverId === driver.id);
+                    // Buscar ubicación más reciente del chofer en ambas fuentes
+                    const locationFromAPI = locations.find(l => l.driverId === driver.id);
+                    const locationFromWS = activeLocations.find(l => l.driverId === driver.id);
+                    
+                    // Usar la más reciente o la única disponible
+                    const location = locationFromAPI || locationFromWS;
                     const isTransmitting = location?.isTransmitting || false;
                     
                     return (

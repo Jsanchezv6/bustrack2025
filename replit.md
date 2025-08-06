@@ -38,6 +38,9 @@ Preferred communication style: Simple, everyday language.
 ✓ **WebSocket Mejorado**: Agregado manejo de mensaje `transmissionStopped` con invalidación automática de cache
 ✓ **Botón Transmisión Unificado**: Consolidado en un solo botón "Iniciar/Detener Transmisión" que maneja toda la funcionalidad
 ✓ **Eliminado Botón Duplicado**: Removido "Obtener Ubicación Actual" para evitar confusión y duplicidad de funciones
+✓ **Actualización Visual Corregida**: Solucionado problema de actualización visual del estado de choferes con invalidación agresiva de cache
+✓ **Estado Local Sincronizado**: Agregado limpieza automática de estado local cuando se detiene transmisión via WebSocket
+✓ **Logging Mejorado**: Implementado logging detallado para diagnóstico de problemas de sincronización visual
 
 ## System Architecture
 
