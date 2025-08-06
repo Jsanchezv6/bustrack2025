@@ -79,6 +79,44 @@ export default function AdminDashboard() {
           }
           return updated;
         });
+        
+        // Forzar actualización inmediata de ubicaciones cuando cambia estado
+        queryClient.invalidateQueries({ queryKey: ['/api/locations'] });
+        console.log(`Estado de transmisión actualizado para ${driverId}: ${isTransmitting ? 'iniciado' : 'detenido'}`);
+      }
+      
+      if (message.type === 'transmissionStatus') {
+        const { driverId, isTransmitting } = message;
+        if (driverId) {
+          setTransmittingDrivers(prev => {
+            const updated = new Set(prev);
+            if (isTransmitting) {
+              updated.add(driverId);
+            } else {
+              updated.delete(driverId);
+            }
+            return updated;
+          });
+        }
+        
+        // Forzar actualización inmediata de ubicaciones
+        queryClient.invalidateQueries({ queryKey: ['/api/locations'] });
+        console.log(`WebSocket - Estado de transmisión para ${driverId}: ${isTransmitting ? 'iniciado' : 'detenido'}`);
+      }
+      
+      if (message.type === 'transmissionStopped') {
+        const { driverId, isTransmitting } = message.data;
+        if (driverId) {
+          setTransmittingDrivers(prev => {
+            const updated = new Set(prev);
+            updated.delete(driverId); // Siempre remover cuando se detiene
+            return updated;
+          });
+        }
+        
+        // Forzar actualización inmediata de ubicaciones
+        queryClient.invalidateQueries({ queryKey: ['/api/locations'] });
+        console.log(`WebSocket - Transmisión detenida para ${driverId}`);
       }
     }
   });

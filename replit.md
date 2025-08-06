@@ -33,6 +33,9 @@ Preferred communication style: Simple, everyday language.
 ✓ **Mejoras de UI**: Agregados estados de carga y mejor manejo de errores en toda la aplicación
 ✓ **Duplicados en Estado de Choferes Solucionado**: Cada chofer aparece una sola vez agrupando sus múltiples turnos
 ✓ **Detener Transmisión Automática**: Sistema detiene transmisión cuando chofer cierra sesión o página
+✓ **Actualización Visual Automática**: Estado de transmisión se actualiza automáticamente sin recargar página via WebSocket
+✓ **Sincronización Estado Real**: Eliminada desconexión entre interfaz visual y estado real en base de datos
+✓ **WebSocket Mejorado**: Agregado manejo de mensaje `transmissionStopped` con invalidación automática de cache
 
 ## System Architecture
 
