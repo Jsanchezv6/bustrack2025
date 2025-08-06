@@ -163,10 +163,15 @@ export default function AdminDashboard() {
       const response = await fetch(`/api/locations`);
       const allLocations = await response.json();
       
+      console.log('Todas las ubicaciones:', allLocations);
+      console.log('Buscando chofer:', driverId);
+      
       // Filtrar por el chofer específico y solo ubicaciones activas
       const driverLocation = allLocations.find((l: Location) => 
         l.driverId === driverId && l.isTransmitting
       );
+      
+      console.log('Ubicación encontrada:', driverLocation);
       
       if (driverLocation) {
         const lat = parseFloat(driverLocation.latitude);
@@ -182,11 +187,23 @@ export default function AdminDashboard() {
           description: `Chofer localizado en: ${lat.toFixed(4)}, ${lng.toFixed(4)}`,
         });
       } else {
-        toast({
-          variant: "destructive",
-          title: "Ubicación no disponible",
-          description: "El chofer no está transmitiendo su ubicación actualmente",
-        });
+        // Verificar si existe ubicación pero no está transmitiendo
+        const driverLocationAny = allLocations.find((l: Location) => l.driverId === driverId);
+        if (driverLocationAny) {
+          console.log(`Chofer ${driverId} tiene ubicación pero no está transmitiendo:`, driverLocationAny);
+          toast({
+            variant: "destructive",
+            title: "Chofer no transmitiendo",
+            description: `El chofer tiene ubicación guardada pero no está transmitiendo activamente`,
+          });
+        } else {
+          console.log(`No se encontró ubicación para chofer: ${driverId}`);
+          toast({
+            variant: "destructive",
+            title: "Sin ubicación",
+            description: "El chofer no ha enviado ninguna ubicación",
+          });
+        }
       }
     } catch (error) {
       console.error('Error al obtener ubicación del chofer:', error);

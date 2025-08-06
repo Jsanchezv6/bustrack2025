@@ -61,17 +61,31 @@ export default function DriverDashboard() {
     const handleBeforeUnload = () => {
       if (isTransmitting && currentUser && currentUser.role === 'driver') {
         // Usar sendBeacon para garantizar que la petición se envíe antes de cerrar
-        navigator.sendBeacon('/api/locations/stop-transmission', JSON.stringify({
-          driverId: currentUser.id
-        }));
+        const data = JSON.stringify({ driverId: currentUser.id });
+        const blob = new Blob([data], { type: 'application/json' });
+        navigator.sendBeacon('/api/locations/stop-transmission', blob);
         console.log('Transmisión detenida por cierre de página');
       }
     };
 
+    // También detectar cuando se pierde el foco de la ventana por mucho tiempo
+    const handleVisibilityChange = () => {
+      if (document.hidden && isTransmitting && currentUser) {
+        // Esperar 30 segundos antes de detener transmisión automáticamente
+        setTimeout(() => {
+          if (document.hidden && isTransmitting) {
+            stopTransmissionSafely();
+          }
+        }, 30000);
+      }
+    };
+
     window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [isTransmitting, currentUser]);
 
@@ -222,22 +236,14 @@ export default function DriverDashboard() {
       stopTracking();
       setIsTransmitting(false);
       
-      // Notify server about transmission status
+      // Detener transmisión usando el endpoint específico
       if (currentUser) {
+        stopTransmissionSafely();
+        
         sendMessage({
           type: 'transmissionStatus',
           driverId: currentUser.id,
           isTransmitting: false
-        });
-        
-        // También actualizar el estado en la base de datos
-        apiRequest("POST", "/api/locations", {
-          driverId: currentUser.id,
-          latitude: coordinates?.latitude.toString() || "0",
-          longitude: coordinates?.longitude.toString() || "0",
-          isTransmitting: false,
-        }).catch(error => {
-          console.error('Error updating transmission status:', error);
         });
       }
 
