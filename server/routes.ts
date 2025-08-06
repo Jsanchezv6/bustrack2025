@@ -304,11 +304,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         data: { driverId, isTransmitting: false }
       };
       
+      console.log(`Enviando WebSocket a ${driverConnections.size} conexiones:`, stopTransmissionUpdate);
+      
+      let sentCount = 0;
       driverConnections.forEach((ws, connectionId) => {
         if (ws.readyState === WebSocket.OPEN) {
           ws.send(JSON.stringify(stopTransmissionUpdate));
+          sentCount++;
+        } else {
+          console.log(`Conexión ${connectionId} cerrada, removiendo...`);
+          driverConnections.delete(connectionId);
         }
       });
+      
+      console.log(`Mensaje WebSocket enviado a ${sentCount} conexiones activas`);
 
       res.json({ success: true, message: "Transmisión detenida" });
     } catch (error) {

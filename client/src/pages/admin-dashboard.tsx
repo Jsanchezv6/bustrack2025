@@ -69,6 +69,7 @@ export default function AdminDashboard() {
           message.type === 'transmissionStopped') {
         // Forzar actualización inmediata de ubicaciones cuando cambia estado
         queryClient.invalidateQueries({ queryKey: ['/api/locations'] });
+        queryClient.refetchQueries({ queryKey: ['/api/locations'] });
         console.log('WebSocket - Actualizando estado de transmisión');
       }
     }
@@ -93,7 +94,9 @@ export default function AdminDashboard() {
 
   const { data: locations = [] } = useQuery<Location[]>({
     queryKey: ['/api/locations'],
-    refetchInterval: 30000, // Actualizar cada 30 segundos
+    refetchInterval: 5000, // Actualizar cada 5 segundos para debug
+    staleTime: 0, // Considerar datos obsoletos inmediatamente
+    cacheTime: 0, // No mantener en cache
   });
 
   // Mutations
