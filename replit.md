@@ -36,6 +36,8 @@ Preferred communication style: Simple, everyday language.
 ✓ **Actualización Visual Automática**: Estado de transmisión se actualiza automáticamente sin recargar página via WebSocket
 ✓ **Sincronización Estado Real**: Eliminada desconexión entre interfaz visual y estado real en base de datos
 ✓ **WebSocket Mejorado**: Agregado manejo de mensaje `transmissionStopped` con invalidación automática de cache
+✓ **Botón Transmisión Unificado**: Consolidado en un solo botón "Iniciar/Detener Transmisión" que maneja toda la funcionalidad
+✓ **Eliminado Botón Duplicado**: Removido "Obtener Ubicación Actual" para evitar confusión y duplicidad de funciones
 
 ## System Architecture
 

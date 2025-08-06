@@ -215,6 +215,9 @@ export default function DriverDashboard() {
 
     if (!isTransmitting) {
       console.log('Iniciando transmisión de ubicación...');
+      
+      // Primero obtener ubicación inmediata y luego iniciar tracking continuo
+      forceLocationUpdate();
       startTracking();
       setIsTransmitting(true);
       
@@ -419,19 +422,6 @@ export default function DriverDashboard() {
               <p className="text-sm text-red-500 mt-2">
                 Su navegador no soporta geolocalización
               </p>
-            )}
-
-            {/* Botón para forzar actualización de ubicación */}
-            {isSupported && (
-              <Button
-                onClick={forceLocationUpdate}
-                variant="outline"
-                size="sm"
-                className="mt-4 mr-2"
-              >
-                <MapPin className="w-4 h-4 mr-2" />
-                Obtener Ubicación Actual
-              </Button>
             )}
 
             <div className="mt-4 flex items-center justify-center space-x-4 text-sm">
