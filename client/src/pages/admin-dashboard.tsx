@@ -37,7 +37,6 @@ export default function AdminDashboard() {
   const [isAssignmentModalOpen, setIsAssignmentModalOpen] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
   const [activeLocations, setActiveLocations] = useState<Location[]>([]);
-  const [transmittingDrivers, setTransmittingDrivers] = useState<Set<string>>(new Set());
   const [mapCenter, setMapCenter] = useState({ lat: -12.0464, lng: -77.0428 });
   const [mapZoom, setMapZoom] = useState(12);
   const mapRef = useRef<any>(null);
@@ -62,61 +61,15 @@ export default function AdminDashboard() {
           return updated;
         });
         
-        // Actualizar estado de transmisión cuando hay una ubicación nueva
-        if (message.data?.isTransmitting && message.data?.driverId) {
-          setTransmittingDrivers(prev => new Set(Array.from(prev).concat([message.data.driverId])));
-        }
       }
       
-      if (message.type === 'transmissionStatusUpdate') {
-        const { driverId, isTransmitting } = message.data;
-        setTransmittingDrivers(prev => {
-          const updated = new Set(prev);
-          if (isTransmitting) {
-            updated.add(driverId);
-          } else {
-            updated.delete(driverId);
-          }
-          return updated;
-        });
-        
+      // Solo invalidar cache cuando hay cambios en WebSocket
+      if (message.type === 'transmissionStatusUpdate' || 
+          message.type === 'transmissionStatus' || 
+          message.type === 'transmissionStopped') {
         // Forzar actualización inmediata de ubicaciones cuando cambia estado
         queryClient.invalidateQueries({ queryKey: ['/api/locations'] });
-        console.log(`Estado de transmisión actualizado para ${driverId}: ${isTransmitting ? 'iniciado' : 'detenido'}`);
-      }
-      
-      if (message.type === 'transmissionStatus') {
-        const { driverId, isTransmitting } = message;
-        if (driverId) {
-          setTransmittingDrivers(prev => {
-            const updated = new Set(prev);
-            if (isTransmitting) {
-              updated.add(driverId);
-            } else {
-              updated.delete(driverId);
-            }
-            return updated;
-          });
-        }
-        
-        // Forzar actualización inmediata de ubicaciones
-        queryClient.invalidateQueries({ queryKey: ['/api/locations'] });
-        console.log(`WebSocket - Estado de transmisión para ${driverId}: ${isTransmitting ? 'iniciado' : 'detenido'}`);
-      }
-      
-      if (message.type === 'transmissionStopped') {
-        const { driverId, isTransmitting } = message.data;
-        if (driverId) {
-          setTransmittingDrivers(prev => {
-            const updated = new Set(prev);
-            updated.delete(driverId); // Siempre remover cuando se detiene
-            return updated;
-          });
-        }
-        
-        // Forzar actualización inmediata de ubicaciones
-        queryClient.invalidateQueries({ queryKey: ['/api/locations'] });
-        console.log(`WebSocket - Transmisión detenida para ${driverId}`);
+        console.log('WebSocket - Actualizando estado de transmisión');
       }
     }
   });
@@ -596,7 +549,7 @@ export default function AdminDashboard() {
                       <div className="flex items-center space-x-4 text-sm">
                         <span className="flex items-center text-green-600">
                           <Circle className="w-2 h-2 mr-1 fill-current" />
-                          Activos: {transmittingDrivers.size}
+                          Activos: {locations.filter(l => l.isTransmitting).length}
                         </span>
                         <span className="text-gray-500">
                           Total ubicaciones: {[...locations, ...activeLocations].length}
@@ -619,7 +572,7 @@ export default function AdminDashboard() {
                     const { driver, assignments, firstAssignment } = driverItem;
                     const location = locations.find(l => l.driverId === driver.id) || 
                                    activeLocations.find(l => l.driverId === driver.id);
-                    const isTransmitting = transmittingDrivers.has(driver.id) || location?.isTransmitting || false;
+                    const isTransmitting = location?.isTransmitting || false;
                     
                     return (
                       <Card 
