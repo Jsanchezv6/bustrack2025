@@ -42,6 +42,39 @@ export default function DriverDashboard() {
     }
   });
 
+  // Función para detener transmisión
+  const stopTransmissionSafely = async () => {
+    if (currentUser && currentUser.role === 'driver') {
+      try {
+        await apiRequest("POST", "/api/locations/stop-transmission", {
+          driverId: currentUser.id
+        });
+        console.log('Transmisión detenida correctamente');
+      } catch (error) {
+        console.error('Error deteniendo transmisión:', error);
+      }
+    }
+  };
+
+  // Detectar cuando se cierra la página
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (isTransmitting && currentUser && currentUser.role === 'driver') {
+        // Usar sendBeacon para garantizar que la petición se envíe antes de cerrar
+        navigator.sendBeacon('/api/locations/stop-transmission', JSON.stringify({
+          driverId: currentUser.id
+        }));
+        console.log('Transmisión detenida por cierre de página');
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [isTransmitting, currentUser]);
+
   // Geolocation hook
   const { 
     coordinates, 
@@ -215,12 +248,12 @@ export default function DriverDashboard() {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (isTransmitting) {
       stopTracking();
       setIsTransmitting(false);
     }
-    authManager.logout();
+    await authManager.logout();
   };
 
   // Función para forzar una obtención de ubicación nueva

@@ -285,6 +285,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint para detener transmisión
+  app.post("/api/locations/stop-transmission", async (req, res) => {
+    try {
+      const { driverId } = req.body;
+      if (!driverId) {
+        return res.status(400).json({ message: "Driver ID requerido" });
+      }
+
+      console.log(`Deteniendo transmisión para chofer: ${driverId}`);
+      
+      // Actualizar el estado de transmisión a false en la base de datos
+      await storage.stopDriverTransmission(driverId);
+      
+      // Broadcast stop transmission update to all admin connections
+      const stopTransmissionUpdate = {
+        type: 'transmissionStopped',
+        data: { driverId, isTransmitting: false }
+      };
+      
+      driverConnections.forEach((ws, connectionId) => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify(stopTransmissionUpdate));
+        }
+      });
+
+      res.json({ success: true, message: "Transmisión detenida" });
+    } catch (error) {
+      console.error('Error deteniendo transmisión:', error);
+      res.status(500).json({ message: "Error interno del servidor" });
+    }
+  });
+
   // WebSocket handling
   wss.on('connection', (ws, req) => {
     const connectionId = Math.random().toString(36).substring(7);

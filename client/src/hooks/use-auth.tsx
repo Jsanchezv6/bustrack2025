@@ -23,7 +23,7 @@ export function useAuth() {
   }, [user]);
 
   const login = authManager.setCurrentUser.bind(authManager);
-  const logout = authManager.logout.bind(authManager);
+  const logout = async () => await authManager.logout();
   const isAdmin = authManager.isAdmin.bind(authManager);
   const isDriver = authManager.isDriver.bind(authManager);
 

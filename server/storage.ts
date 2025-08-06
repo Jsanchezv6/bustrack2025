@@ -45,6 +45,7 @@ export interface IStorage {
   getDriverLocation(driverId: string): Promise<Location | undefined>;
   getAllActiveLocations(): Promise<Location[]>;
   setDriverTransmissionStatus(driverId: string, isTransmitting: boolean): Promise<void>;
+  stopDriverTransmission(driverId: string): Promise<void>;
 }
 
 // Implementación de almacenamiento con base de datos PostgreSQL
@@ -86,7 +87,6 @@ export class DatabaseStorage implements IStorage {
         routeNumber: 1,
         startTime: "06:00",
         endTime: "22:00",
-        frequency: 15,
         isActive: true,
       }).returning();
 
@@ -320,6 +320,16 @@ export class DatabaseStorage implements IStorage {
       .update(locations)
       .set({ 
         isTransmitting,
+        timestamp: new Date()
+      })
+      .where(eq(locations.driverId, driverId));
+  }
+
+  async stopDriverTransmission(driverId: string): Promise<void> {
+    await db
+      .update(locations)
+      .set({ 
+        isTransmitting: false,
         timestamp: new Date()
       })
       .where(eq(locations.driverId, driverId));

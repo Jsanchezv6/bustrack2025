@@ -79,7 +79,21 @@ class AuthManager {
     return this.currentUser?.role === 'driver';
   }
 
-  logout(): void {
+  async logout(): Promise<void> {
+    // Si el usuario actual es un chofer, detener transmisión antes de cerrar sesión
+    if (this.currentUser && this.currentUser.role === 'driver') {
+      try {
+        await fetch('/api/locations/stop-transmission', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ driverId: this.currentUser.id })
+        });
+        console.log('AuthManager - Transmisión detenida al cerrar sesión');
+      } catch (error) {
+        console.error('Error deteniendo transmisión al cerrar sesión:', error);
+      }
+    }
+    
     this.setCurrentUser(null);
   }
 

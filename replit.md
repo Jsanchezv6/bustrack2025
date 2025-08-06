@@ -31,6 +31,8 @@ Preferred communication style: Simple, everyday language.
 ✓ **Actualizaciones en Tiempo Real**: Mejorado WebSocket con invalidación automática de cache para actualizaciones instantáneas
 ✓ **Gestión de Sesiones**: Agregado endpoint de verificación de sesión y flujo de autenticación mejorado
 ✓ **Mejoras de UI**: Agregados estados de carga y mejor manejo de errores en toda la aplicación
+✓ **Duplicados en Estado de Choferes Solucionado**: Cada chofer aparece una sola vez agrupando sus múltiples turnos
+✓ **Detener Transmisión Automática**: Sistema detiene transmisión cuando chofer cierra sesión o página
 
 ## System Architecture
 
