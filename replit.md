@@ -41,6 +41,8 @@ Preferred communication style: Simple, everyday language.
 ✓ **Actualización Visual Corregida**: Solucionado problema de actualización visual del estado de choferes con invalidación agresiva de cache
 ✓ **Estado Local Sincronizado**: Agregado limpieza automática de estado local cuando se detiene transmisión via WebSocket
 ✓ **Logging Mejorado**: Implementado logging detallado para diagnóstico de problemas de sincronización visual
+✓ **Problema Turnos Panel Chofer Resuelto**: Sistema de turnos funcionando correctamente, necesitaba asignaciones para fecha actual
+✓ **Zona Horaria Guatemala Verificada**: Confirmado funcionamiento correcto de cálculos de turnos con "America/Guatemala"
 
 ## System Architecture
 

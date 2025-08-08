@@ -232,8 +232,6 @@ export class DatabaseStorage implements IStorage {
     const guatemalaTime = new Date(now.toLocaleString("en-US", {timeZone: "America/Guatemala"}));
     const currentTime = `${String(guatemalaTime.getHours()).padStart(2, '0')}:${String(guatemalaTime.getMinutes()).padStart(2, '0')}`;
     
-
-    
     let current: Assignment | null = null;
     let next: Assignment | null = null;
 
