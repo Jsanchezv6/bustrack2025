@@ -203,17 +203,15 @@ export class DatabaseStorage implements IStorage {
     return assignment || undefined;
   }
 
-  // Método para obtener todos los turnos activos de un chofer para hoy
-  async getTodayAssignmentsByDriverId(driverId: string): Promise<Assignment[]> {
-    const today = new Date().toISOString().split('T')[0];
+  // Método para obtener todos los turnos activos de un chofer (perpetuos)
+  async getActiveAssignmentsByDriverId(driverId: string): Promise<Assignment[]> {
     return await db
       .select()
       .from(assignments)
       .where(
         and(
           eq(assignments.driverId, driverId),
-          eq(assignments.isActive, true),
-          eq(assignments.assignedDate, today)
+          eq(assignments.isActive, true)
         )
       )
       .orderBy(assignments.shiftStart);
@@ -221,9 +219,9 @@ export class DatabaseStorage implements IStorage {
 
   // Método para obtener turno actual y siguiente
   async getCurrentAndNextShifts(driverId: string): Promise<{ current: Assignment | null, next: Assignment | null }> {
-    const todayAssignments = await this.getTodayAssignmentsByDriverId(driverId);
+    const activeAssignments = await this.getActiveAssignmentsByDriverId(driverId);
     
-    if (todayAssignments.length === 0) {
+    if (activeAssignments.length === 0) {
       return { current: null, next: null };
     }
 
@@ -236,19 +234,23 @@ export class DatabaseStorage implements IStorage {
     let next: Assignment | null = null;
 
     // Buscar turno actual (donde la hora actual está entre shiftStart y shiftEnd)
-    for (const assignment of todayAssignments) {
+    for (const assignment of activeAssignments) {
       if (currentTime >= assignment.shiftStart && currentTime <= assignment.shiftEnd) {
         current = assignment;
         break;
       }
     }
 
-    // Buscar siguiente turno (el primer turno que inicia después de la hora actual)
-    for (const assignment of todayAssignments) {
-      if (assignment.shiftStart > currentTime) {
-        next = assignment;
-        break;
-      }
+    // Buscar siguiente turno - algoritmo mejorado
+    // 1. Buscar turnos que inician después de la hora actual
+    let futureShifts = activeAssignments.filter(a => a.shiftStart > currentTime);
+    
+    if (futureShifts.length > 0) {
+      // Hay turnos después de la hora actual
+      next = futureShifts[0]; // El primero en orden alfabético será el más temprano
+    } else {
+      // No hay más turnos después de la hora actual, tomar el primer turno del día (ciclo)
+      next = activeAssignments[0]; // El primero por orden de shiftStart
     }
 
     return { current, next };
