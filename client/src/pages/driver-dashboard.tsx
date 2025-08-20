@@ -343,31 +343,35 @@ export default function DriverDashboard() {
       {/* Navigation */}
       <nav className="bg-secondary text-white shadow-lg">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4">
-              <Compass className="text-2xl" />
-              <h1 className="text-xl font-semibold">Panel Chofer</h1>
+          <div className="flex items-center justify-between h-14 sm:h-16">
+            <div className="flex items-center space-x-2 sm:space-x-4 min-w-0">
+              <Compass className="text-xl sm:text-2xl flex-shrink-0" />
+              <h1 className="text-lg sm:text-xl font-semibold truncate">Panel Chofer</h1>
             </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm">{currentUser?.fullName}</span>
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <span className="text-xs sm:text-sm hidden sm:block">{currentUser?.fullName}</span>
+              <span className="text-xs sm:hidden">
+                {currentUser?.fullName?.split(' ')[0]}
+              </span>
               <Button 
                 variant="secondary" 
                 size="sm"
                 onClick={handleLogout}
-                className="bg-green-700 hover:bg-green-800"
+                className="bg-green-700 hover:bg-green-800 px-2 sm:px-3"
               >
                 <LogOut className="w-4 h-4" />
+                <span className="hidden lg:inline ml-2">Salir</span>
               </Button>
             </div>
           </div>
         </div>
       </nav>
 
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto px-4 py-4 sm:py-8">
         {/* Location Control Card */}
-        <Card className="mb-8">
-          <CardContent className="p-6 text-center">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-4">Control de Ubicación</h2>
+        <Card className="mb-6 sm:mb-8">
+          <CardContent className="p-4 sm:p-6 text-center">
+            <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4">Control de Ubicación</h2>
             
             <div className="mb-6">
               <div className="flex items-center justify-center mb-4">
@@ -443,20 +447,20 @@ export default function DriverDashboard() {
 
         {/* Turno Actual */}
         {shifts?.current && currentSchedule && (
-          <Card className="mb-8">
-            <CardContent className="p-6">
-              <h3 className="text-xl font-semibold text-gray-800 mb-4">Mi Turno Actual</h3>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <div className="flex items-center mb-4">
-                  <div className="bg-green-600 text-white rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold mr-4">
+          <Card className="mb-6 sm:mb-8">
+            <CardContent className="p-4 sm:p-6">
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">Mi Turno Actual</h3>
+              <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
+                <div className="flex items-start sm:items-center mb-4 space-x-3 sm:space-x-4">
+                  <div className="bg-green-600 text-white rounded-full w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center text-lg sm:text-xl font-bold flex-shrink-0">
                     {currentSchedule.routeNumber}
                   </div>
-                  <div>
-                    <h4 className="text-lg font-semibold">Ruta {currentSchedule.routeName}</h4>
-                    <p className="text-gray-600">Turno: {shifts.current.shiftStart} - {shifts.current.shiftEnd}</p>
-                    <p className="text-sm text-gray-500">Fecha: {shifts.current.assignedDate}</p>
+                  <div className="min-w-0 flex-1">
+                    <h4 className="text-base sm:text-lg font-semibold truncate">Ruta {currentSchedule.routeName}</h4>
+                    <p className="text-sm sm:text-base text-gray-600">Turno: {shifts.current.shiftStart} - {shifts.current.shiftEnd}</p>
+                    <p className="text-xs sm:text-sm text-gray-500">Fecha: {shifts.current.assignedDate}</p>
                     {getRemainingTime() && (
-                      <p className="text-sm text-blue-600 font-medium">Tiempo restante: {getRemainingTime()}</p>
+                      <p className="text-xs sm:text-sm text-blue-600 font-medium">Tiempo restante: {getRemainingTime()}</p>
                     )}
                   </div>
                 </div>
@@ -476,10 +480,10 @@ export default function DriverDashboard() {
 
         {/* Turno Siguiente */}
         {shifts?.next && (
-          <Card className="mb-8">
-            <CardContent className="p-6">
-              <h3 className="text-xl font-semibold text-gray-800 mb-4">Mi Turno Siguiente</h3>
-              <div className="bg-blue-50 rounded-lg p-4">
+          <Card className="mb-6 sm:mb-8">
+            <CardContent className="p-4 sm:p-6">
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">Mi Turno Siguiente</h3>
+              <div className="bg-blue-50 rounded-lg p-3 sm:p-4">
                 {nextScheduleLoading ? (
                   <div className="text-center py-4">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto mb-2"></div>
@@ -487,15 +491,15 @@ export default function DriverDashboard() {
                   </div>
                 ) : nextSchedule ? (
                   <>
-                    <div className="flex items-center mb-4">
-                      <div className="bg-blue-600 text-white rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold mr-4">
+                    <div className="flex items-start sm:items-center mb-4 space-x-3 sm:space-x-4">
+                      <div className="bg-blue-600 text-white rounded-full w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center text-lg sm:text-xl font-bold flex-shrink-0">
                         {nextSchedule.routeNumber}
                       </div>
-                      <div>
-                        <h4 className="text-lg font-semibold">Ruta {nextSchedule.routeName}</h4>
-                        <p className="text-gray-600">Turno: {shifts.next.shiftStart} - {shifts.next.shiftEnd}</p>
-                        <p className="text-sm text-gray-500">Fecha: {shifts.next.assignedDate}</p>
-                        <p className="text-sm text-blue-600 font-medium">Inicia a las {shifts.next.shiftStart}</p>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="text-base sm:text-lg font-semibold truncate">Ruta {nextSchedule.routeName}</h4>
+                        <p className="text-sm sm:text-base text-gray-600">Turno: {shifts.next.shiftStart} - {shifts.next.shiftEnd}</p>
+                        <p className="text-xs sm:text-sm text-gray-500">Fecha: {shifts.next.assignedDate}</p>
+                        <p className="text-xs sm:text-sm text-blue-600 font-medium">Inicia a las {shifts.next.shiftStart}</p>
                       </div>
                     </div>
 
@@ -530,14 +534,17 @@ export default function DriverDashboard() {
 
         {/* Botón Cola de Turnos */}
         {(shifts?.current || shifts?.next) && (
-          <Card className="mb-8">
-            <CardContent className="p-6 text-center">
+          <Card className="mb-6 sm:mb-8">
+            <CardContent className="p-4 sm:p-6 text-center">
               <Button
                 onClick={() => setShowShiftQueue(!showShiftQueue)}
-                className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3"
+                className="bg-purple-600 hover:bg-purple-700 text-white w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3"
+                size="sm"
               >
-                <List className="w-5 h-5 mr-2" />
-                {showShiftQueue ? 'Ocultar Cola de Turnos' : 'Ver Cola de Turnos'}
+                <List className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                <span className="text-sm sm:text-base">
+                  {showShiftQueue ? 'Ocultar Cola de Turnos' : 'Ver Cola de Turnos'}
+                </span>
               </Button>
             </CardContent>
           </Card>

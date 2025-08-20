@@ -271,80 +271,84 @@ export default function AdminDashboard() {
       {/* Navigation */}
       <nav className="bg-primary text-white shadow-lg">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4">
-              <Bus className="text-2xl" />
-              <h1 className="text-xl font-semibold">Panel Administrador</h1>
+          <div className="flex items-center justify-between h-14 sm:h-16">
+            <div className="flex items-center space-x-2 sm:space-x-4 min-w-0">
+              <Bus className="text-xl sm:text-2xl flex-shrink-0" />
+              <h1 className="text-lg sm:text-xl font-semibold truncate">Panel Administrador</h1>
             </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm">{currentUser?.fullName}</span>
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <span className="text-xs sm:text-sm hidden sm:block">{currentUser?.fullName}</span>
+              <span className="text-xs sm:hidden">
+                {currentUser?.fullName?.split(' ')[0]}
+              </span>
               <Button 
                 variant="secondary" 
                 size="sm"
                 onClick={handleLogout}
-                className="bg-blue-700 hover:bg-blue-800"
+                className="bg-blue-700 hover:bg-blue-800 px-2 sm:px-3"
               >
                 <LogOut className="w-4 h-4" />
+                <span className="hidden lg:inline ml-2">Salir</span>
               </Button>
             </div>
           </div>
         </div>
       </nav>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-4 sm:py-8">
         {/* Dashboard Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-6">
               <div className="flex items-center">
-                <div className="bg-primary bg-opacity-10 p-3 rounded-full">
-                  <Bus className="text-primary text-xl" />
+                <div className="bg-primary bg-opacity-10 p-2 sm:p-3 rounded-full flex-shrink-0">
+                  <Bus className="text-primary text-lg sm:text-xl" />
                 </div>
-                <div className="ml-4">
-                  <h3 className="text-lg font-semibold text-gray-800">{stats.totalBuses}</h3>
-                  <p className="text-gray-600">Buses Activos</p>
+                <div className="ml-2 sm:ml-4 min-w-0">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-800">{stats.totalBuses}</h3>
+                  <p className="text-xs sm:text-sm text-gray-600 truncate">Buses Activos</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-6">
               <div className="flex items-center">
-                <div className="bg-secondary bg-opacity-10 p-3 rounded-full">
-                  <Users className="text-secondary text-xl" />
+                <div className="bg-secondary bg-opacity-10 p-2 sm:p-3 rounded-full flex-shrink-0">
+                  <Users className="text-secondary text-lg sm:text-xl" />
                 </div>
-                <div className="ml-4">
-                  <h3 className="text-lg font-semibold text-gray-800">{stats.totalDrivers}</h3>
-                  <p className="text-gray-600">Choferes</p>
+                <div className="ml-2 sm:ml-4 min-w-0">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-800">{stats.totalDrivers}</h3>
+                  <p className="text-xs sm:text-sm text-gray-600 truncate">Choferes</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-6">
               <div className="flex items-center">
-                <div className="bg-accent bg-opacity-10 p-3 rounded-full">
-                  <Route className="text-accent text-xl" />
+                <div className="bg-accent bg-opacity-10 p-2 sm:p-3 rounded-full flex-shrink-0">
+                  <Route className="text-accent text-lg sm:text-xl" />
                 </div>
-                <div className="ml-4">
-                  <h3 className="text-lg font-semibold text-gray-800">{stats.totalRoutes}</h3>
-                  <p className="text-gray-600">Rutas</p>
+                <div className="ml-2 sm:ml-4 min-w-0">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-800">{stats.totalRoutes}</h3>
+                  <p className="text-xs sm:text-sm text-gray-600 truncate">Rutas</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-6">
               <div className="flex items-center">
-                <div className="bg-green-500 bg-opacity-10 p-3 rounded-full">
-                  <MapPin className="text-green-500 text-xl" />
+                <div className="bg-green-500 bg-opacity-10 p-2 sm:p-3 rounded-full flex-shrink-0">
+                  <MapPin className="text-green-500 text-lg sm:text-xl" />
                 </div>
-                <div className="ml-4">
-                  <h3 className="text-lg font-semibold text-gray-800">{stats.activeTransmissions}</h3>
-                  <p className="text-gray-600">Transmitiendo</p>
+                <div className="ml-2 sm:ml-4 min-w-0">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-800">{stats.activeTransmissions}</h3>
+                  <p className="text-xs sm:text-sm text-gray-600 truncate">Transmitiendo</p>
                 </div>
               </div>
             </CardContent>
@@ -354,107 +358,108 @@ export default function AdminDashboard() {
         {/* Main Content Tabs */}
         <Card>
           <Tabs defaultValue="schedules" className="w-full">
-            <div className="border-b border-gray-200">
-              <TabsList className="w-full justify-start bg-transparent p-0">
+            <div className="border-b border-gray-200 overflow-x-auto">
+              <TabsList className="w-full min-w-max justify-start bg-transparent p-0 h-auto">
                 <TabsTrigger 
                   value="schedules" 
-                  className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none"
+                  className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none whitespace-nowrap px-3 py-2 text-sm"
                 >
-                  <Calendar className="w-4 h-4 mr-2" />
-                  Horarios
+                  <Calendar className="w-4 h-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Horarios</span>
+                  <span className="sm:hidden">Hor.</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="assignments"
-                  className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none"
+                  className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none whitespace-nowrap px-3 py-2 text-sm"
                 >
-                  <UserCog className="w-4 h-4 mr-2" />
-                  Asignaciones
+                  <UserCog className="w-4 h-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Asignaciones</span>
+                  <span className="sm:hidden">Asig.</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="users"
-                  className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none"
+                  className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none whitespace-nowrap px-3 py-2 text-sm"
                 >
-                  <Users className="w-4 h-4 mr-2" />
-                  Usuarios
+                  <Users className="w-4 h-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Usuarios</span>
+                  <span className="sm:hidden">Users</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="monitoring"
-                  className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none"
+                  className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none whitespace-nowrap px-3 py-2 text-sm"
                 >
-                  <Eye className="w-4 h-4 mr-2" />
-                  Monitoreo
+                  <Eye className="w-4 h-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Monitoreo</span>
+                  <span className="sm:hidden">Mon.</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="reports"
-                  className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none"
+                  className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none whitespace-nowrap px-3 py-2 text-sm"
                 >
-                  <AlertTriangle className="w-4 h-4 mr-2" />
-                  Reportes
+                  <AlertTriangle className="w-4 h-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Reportes</span>
+                  <span className="sm:hidden">Rep.</span>
                 </TabsTrigger>
               </TabsList>
             </div>
 
             {/* Schedules Tab */}
-            <TabsContent value="schedules" className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-semibold text-gray-800">Gestión de Horarios</h2>
+            <TabsContent value="schedules" className="p-3 sm:p-6">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4 sm:mb-6">
+                <h2 className="text-lg sm:text-xl font-semibold text-gray-800">Gestión de Horarios</h2>
                 <Button 
                   onClick={() => {
                     setSelectedSchedule(null);
                     setIsScheduleModalOpen(true);
                   }}
-                  className="bg-primary hover:bg-primary-dark"
+                  className="bg-primary hover:bg-primary-dark w-full sm:w-auto"
+                  size="sm"
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  Nuevo Horario
+                  <span className="hidden sm:inline">Nuevo Horario</span>
+                  <span className="sm:hidden">Nuevo</span>
                 </Button>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full table-auto">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ruta</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hora Inicio</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hora Fin</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {schedulesLoading ? (
-                      <tr>
-                        <td colSpan={5} className="px-6 py-4 text-center">Cargando...</td>
-                      </tr>
-                    ) : schedules.length === 0 ? (
-                      <tr>
-                        <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
-                          No hay horarios registrados
-                        </td>
-                      </tr>
-                    ) : (
-                      schedules.map((schedule) => (
-                        <tr key={schedule.id}>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center">
-                              <div className="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">
-                                {schedule.routeNumber}
-                              </div>
-                              <span className="font-medium">{schedule.routeName}</span>
+              {schedulesLoading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+                  <p className="text-gray-600">Cargando...</p>
+                </div>
+              ) : schedules.length === 0 ? (
+                <div className="text-center py-12">
+                  <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-600 mb-2">No hay horarios</h3>
+                  <p className="text-gray-500">Crea un horario para comenzar.</p>
+                </div>
+              ) : (
+                <>
+                  {/* Vista móvil - Cards */}
+                  <div className="block sm:hidden space-y-3">
+                    {schedules.map((schedule) => (
+                      <Card key={schedule.id} className="p-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center space-x-3 flex-1 min-w-0">
+                            <div className="bg-primary text-white rounded-full w-10 h-10 flex items-center justify-center text-sm font-bold flex-shrink-0">
+                              {schedule.routeNumber}
                             </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-gray-900">{schedule.startTime}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-gray-900">{schedule.endTime}</td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <Badge variant={schedule.isActive ? "default" : "secondary"}>
-                              {schedule.isActive ? "Activo" : "Inactivo"}
-                            </Badge>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap space-x-2">
+                            <div className="min-w-0 flex-1">
+                              <h4 className="font-medium text-gray-900 truncate">{schedule.routeName}</h4>
+                              <p className="text-sm text-gray-600">{schedule.startTime} - {schedule.endTime}</p>
+                              <Badge 
+                                variant={schedule.isActive ? "default" : "secondary"}
+                                className="mt-1"
+                              >
+                                {schedule.isActive ? "Activo" : "Inactivo"}
+                              </Badge>
+                            </div>
+                          </div>
+                          <div className="flex space-x-1 ml-2">
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => handleEditSchedule(schedule)}
+                              className="p-2"
                             >
                               <Edit className="w-4 h-4" />
                             </Button>
@@ -462,17 +467,70 @@ export default function AdminDashboard() {
                               variant="ghost"
                               size="sm"
                               onClick={() => handleDeleteSchedule(schedule.id)}
-                              className="text-red-600 hover:text-red-800"
+                              className="text-red-600 hover:text-red-800 p-2"
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>
-                          </td>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+
+                  {/* Vista desktop - Tabla */}
+                  <div className="hidden sm:block overflow-x-auto">
+                    <table className="w-full table-auto">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ruta</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hora Inicio</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hora Fin</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
                         </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200">
+                        {schedules.map((schedule) => (
+                          <tr key={schedule.id}>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center">
+                                <div className="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">
+                                  {schedule.routeNumber}
+                                </div>
+                                <span className="font-medium">{schedule.routeName}</span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-gray-900">{schedule.startTime}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-gray-900">{schedule.endTime}</td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <Badge variant={schedule.isActive ? "default" : "secondary"}>
+                                {schedule.isActive ? "Activo" : "Inactivo"}
+                              </Badge>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap space-x-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEditSchedule(schedule)}
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteSchedule(schedule.id)}
+                                className="text-red-600 hover:text-red-800"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              )}
             </TabsContent>
 
             {/* Assignments Tab */}

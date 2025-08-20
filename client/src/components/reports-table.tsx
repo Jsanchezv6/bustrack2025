@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { Report, User } from "@shared/schema";
 import { AlertTriangle, Clock, MessageCircle } from "lucide-react";
 
@@ -91,54 +92,82 @@ export function ReportsTable() {
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full table-auto">
-        <thead className="bg-gray-50">
-          <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-              Fecha/Hora
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-              Chofer
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-              Tipo
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-              Descripción
-            </th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-200">
-          {sortedReports.map((report) => (
-            <tr key={report.id} className="hover:bg-gray-50" data-testid={`row-report-${report.id}`}>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm text-gray-900">
-                  {formatDateTime(report.timestamp)}
-                </div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm font-medium text-gray-900">
-                  {report.driverName}
-                </div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
+    <>
+      {/* Vista móvil - Cards */}
+      <div className="block sm:hidden space-y-3">
+        {sortedReports.map((report) => (
+          <Card key={report.id} className="p-4" data-testid={`card-report-${report.id}`}>
+            <div className="space-y-3">
+              <div className="flex items-start justify-between">
                 <div className="flex items-center space-x-2">
                   {getReportTypeIcon(report.type)}
                   {getReportTypeBadge(report.type)}
                 </div>
-              </td>
-              <td className="px-6 py-4">
-                <div className="text-sm text-gray-900 max-w-md">
-                  <p className="line-clamp-2" title={report.description}>
-                    {report.description}
-                  </p>
-                </div>
-              </td>
+                <span className="text-xs text-gray-500">
+                  {formatDateTime(report.timestamp)}
+                </span>
+              </div>
+              <div>
+                <h4 className="font-medium text-gray-900">{report.driverName}</h4>
+                <p className="text-sm text-gray-600 mt-1 line-clamp-3">
+                  {report.description}
+                </p>
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      {/* Vista desktop - Tabla */}
+      <div className="hidden sm:block overflow-x-auto">
+        <table className="w-full table-auto">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Fecha/Hora
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Chofer
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Tipo
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Descripción
+              </th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody className="divide-y divide-gray-200">
+            {sortedReports.map((report) => (
+              <tr key={report.id} className="hover:bg-gray-50" data-testid={`row-report-${report.id}`}>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-900">
+                    {formatDateTime(report.timestamp)}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm font-medium text-gray-900">
+                    {report.driverName}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="flex items-center space-x-2">
+                    {getReportTypeIcon(report.type)}
+                    {getReportTypeBadge(report.type)}
+                  </div>
+                </td>
+                <td className="px-6 py-4">
+                  <div className="text-sm text-gray-900 max-w-md">
+                    <p className="line-clamp-2" title={report.description}>
+                      {report.description}
+                    </p>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 }
