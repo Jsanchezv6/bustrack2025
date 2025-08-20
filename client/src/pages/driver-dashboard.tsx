@@ -20,13 +20,20 @@ import {
   CheckCircle,
   StopCircle,
   List,
-  Calendar
+  Calendar,
+  Menu,
+  X,
+  Home,
+  Car,
+  AlertTriangle
 } from "lucide-react";
 import { ReportModal } from "@/components/report-modal";
 
 export default function DriverDashboard() {
   const [isTransmitting, setIsTransmitting] = useState(false);
   const [showShiftQueue, setShowShiftQueue] = useState(false);
+  const [activeTab, setActiveTab] = useState("home");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { toast } = useToast();
   const currentUser = authManager.getCurrentUser();
 
@@ -338,38 +345,159 @@ export default function DriverDashboard() {
 
   // Ya no necesitamos este loading global, se maneja individualmente en cada sección
 
+  // Configuración de elementos del sidebar del chofer
+  const sidebarItems = [
+    {
+      id: "home",
+      label: "Inicio",
+      icon: Home,
+      description: "Control de ubicación"
+    },
+    {
+      id: "shifts",
+      label: "Mis Turnos",
+      icon: Calendar,
+      description: "Turnos asignados"
+    },
+    {
+      id: "reports",
+      label: "Reportar",
+      icon: AlertTriangle,
+      description: "Reportar incidentes"
+    }
+  ];
+
   return (
-    <div className="min-h-screen bg-neutral">
-      {/* Navigation */}
-      <nav className="bg-secondary text-white shadow-lg">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between h-14 sm:h-16">
-            <div className="flex items-center space-x-2 sm:space-x-4 min-w-0">
-              <Compass className="text-xl sm:text-2xl flex-shrink-0" />
-              <h1 className="text-lg sm:text-xl font-semibold truncate">Panel Chofer</h1>
+    <div className="min-h-screen bg-neutral flex">
+      {/* Sidebar */}
+      <div className={`
+        bg-secondary text-white transition-all duration-300 ease-in-out
+        ${isMobileMenuOpen ? 'w-64' : 'w-0 lg:w-64'} 
+        fixed lg:static inset-y-0 left-0 z-30 overflow-hidden
+      `}>
+        <div className="flex flex-col h-full">
+          {/* Header del sidebar */}
+          <div className="flex items-center justify-between p-4 border-b border-secondary-foreground/20">
+            <div className="flex items-center space-x-3">
+              <Compass className="w-8 h-8" />
+              <span className="font-bold text-lg">Panel Chofer</span>
             </div>
-            <div className="flex items-center space-x-2 sm:space-x-4">
-              <span className="text-xs sm:text-sm hidden sm:block">{currentUser?.fullName}</span>
-              <span className="text-xs sm:hidden">
-                {currentUser?.fullName?.split(' ')[0]}
-              </span>
-              <Button 
-                variant="secondary" 
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="lg:hidden text-white hover:bg-secondary-foreground/20"
+            >
+              <X className="w-5 h-5" />
+            </Button>
+          </div>
+
+          {/* Navegación */}
+          <nav className="flex-1 px-4 py-6">
+            <ul className="space-y-2">
+              {sidebarItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                
+                return (
+                  <li key={item.id}>
+                    <button
+                      onClick={() => {
+                        setActiveTab(item.id);
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className={`
+                        w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-left transition-colors
+                        ${isActive 
+                          ? 'bg-secondary-foreground/20 text-white' 
+                          : 'text-secondary-foreground hover:bg-secondary-foreground/10 hover:text-white'
+                        }
+                      `}
+                    >
+                      <Icon className="w-5 h-5 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <div className="font-medium">{item.label}</div>
+                        <div className="text-xs text-secondary-foreground/70 truncate">
+                          {item.description}
+                        </div>
+                      </div>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
+
+          {/* Footer del sidebar */}
+          <div className="p-4 border-t border-secondary-foreground/20">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-secondary-foreground/20 rounded-full flex items-center justify-center">
+                  <Car className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <div className="font-medium text-sm truncate">{currentUser?.fullName}</div>
+                  <div className="text-xs text-secondary-foreground/70">Chofer</div>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
                 size="sm"
                 onClick={handleLogout}
-                className="bg-green-700 hover:bg-green-800 px-2 sm:px-3"
+                className="text-secondary-foreground hover:bg-secondary-foreground/20 hover:text-white"
               >
                 <LogOut className="w-4 h-4" />
-                <span className="hidden lg:inline ml-2">Salir</span>
               </Button>
             </div>
           </div>
         </div>
-      </nav>
+      </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-4 sm:py-8">
-        {/* Location Control Card */}
-        <Card className="mb-6 sm:mb-8">
+      {/* Overlay para móviles */}
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Contenido principal */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Header principal */}
+        <header className="bg-white shadow-sm border-b">
+          <div className="px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              <div className="flex items-center space-x-4">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsMobileMenuOpen(true)}
+                  className="lg:hidden"
+                >
+                  <Menu className="w-5 h-5" />
+                </Button>
+                <div>
+                  <h1 className="text-xl font-semibold text-gray-900">
+                    {sidebarItems.find(item => item.id === activeTab)?.label || "Dashboard"}
+                  </h1>
+                  <p className="text-sm text-gray-500">
+                    {sidebarItems.find(item => item.id === activeTab)?.description}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Área de contenido */}
+        <main className="flex-1 overflow-auto">
+          <div className="px-4 sm:px-6 lg:px-8 py-8">
+
+            {/* Sección Inicio - Control de Ubicación */}
+            {activeTab === "home" && (
+              <div className="space-y-6">
+                {/* Location Control Card */}
+                <Card className="mb-6 sm:mb-8">
           <CardContent className="p-4 sm:p-6 text-center">
             <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4">Control de Ubicación</h2>
             
@@ -444,9 +572,14 @@ export default function DriverDashboard() {
             )}
           </CardContent>
         </Card>
+              </div>
+            )}
 
-        {/* Turno Actual */}
-        {shifts?.current && currentSchedule && (
+            {/* Sección Mis Turnos */}
+            {activeTab === "shifts" && (
+              <div className="space-y-6">
+                {/* Turno Actual */}
+                {shifts?.current && currentSchedule && (
           <Card className="mb-6 sm:mb-8">
             <CardContent className="p-4 sm:p-6">
               <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">Mi Turno Actual</h3>
@@ -629,25 +762,48 @@ export default function DriverDashboard() {
           </Card>
         )}
 
-        {/* No shifts message */}
-        {!shifts?.current && !shifts?.next && !shiftsLoading && (
-          <Card className="mb-8">
-            <CardContent className="p-6 text-center">
-              <Clock className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">Sin Turnos Asignados</h3>
-              <p className="text-gray-600">
-                No tiene turnos asignados para hoy. Contacte con el administrador.
-              </p>
-              {shiftsError && (
-                <p className="text-sm text-red-500 mt-2">
-                  Error: {String(shiftsError)}
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        )}
+                {/* No shifts message */}
+                {!shifts?.current && !shifts?.next && !shiftsLoading && (
+                  <Card className="mb-8">
+                    <CardContent className="p-6 text-center">
+                      <Clock className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-xl font-semibold text-gray-800 mb-2">Sin Turnos Asignados</h3>
+                      <p className="text-gray-600">
+                        No tiene turnos asignados para hoy. Contacte con el administrador.
+                      </p>
+                      {shiftsError && (
+                        <p className="text-sm text-red-500 mt-2">
+                          Error: {String(shiftsError)}
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            )}
 
+            {/* Sección Reportes */}
+            {activeTab === "reports" && (
+              <div className="space-y-6">
+                <Card>
+                  <CardContent className="p-6 text-center">
+                    <AlertTriangle className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold text-gray-800 mb-4">Reportar Incidente</h3>
+                    <p className="text-gray-600 mb-6">
+                      Use este formulario para reportar cualquier incidente o problema durante su turno.
+                    </p>
+                    {currentUser && (
+                      <div className="max-w-xs mx-auto">
+                        <ReportModal driverId={currentUser.id} />
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            )}
 
+          </div>
+        </main>
       </div>
     </div>
   );
