@@ -15,6 +15,7 @@ import {
 import { db } from "./db";
 import { eq, and } from "drizzle-orm";
 import { randomUUID } from "crypto";
+import bcrypt from "bcrypt";
 
 export interface IStorage {
   // Users
@@ -63,19 +64,21 @@ export class DatabaseStorage implements IStorage {
         return; // Ya hay datos inicializados
       }
 
-      // Crear usuario administrador por defecto
+      // Crear usuario administrador por defecto con contraseña hasheada
+      const hashedAdminPassword = await bcrypt.hash("admin123", 10);
       const [admin] = await db.insert(users).values({
         username: "admin",
-        password: "admin123", // En producción, esto debería estar hasheado
+        password: hashedAdminPassword,
         role: "admin",
         fullName: "Administrador Sistema",
         licenseNumber: null,
       }).returning();
 
-      // Crear chofer por defecto
+      // Crear chofer por defecto con contraseña hasheada
+      const hashedDriverPassword = await bcrypt.hash("chofer123", 10);
       const [driver] = await db.insert(users).values({
         username: "chofer1",
-        password: "chofer123", // En producción, esto debería estar hasheado
+        password: hashedDriverPassword,
         role: "driver",
         fullName: "Juan Pérez",
         licenseNumber: "A1234567",
@@ -118,9 +121,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
+    // Hashear la contraseña antes de guardar
+    const hashedPassword = await bcrypt.hash(insertUser.password, 10);
+    const userWithHashedPassword = {
+      ...insertUser,
+      password: hashedPassword
+    };
+    
     const [user] = await db
       .insert(users)
-      .values(insertUser)
+      .values(userWithHashedPassword)
       .returning();
     return user;
   }
@@ -134,6 +144,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateUser(id: string, userData: Partial<User>): Promise<User | undefined> {
+    // Si se está actualizando la contraseña, hashearla
+    if (userData.password) {
+      userData.password = await bcrypt.hash(userData.password, 10);
+    }
+    
     const [updatedUser] = await db
       .update(users)
       .set(userData)
@@ -146,6 +161,8 @@ export class DatabaseStorage implements IStorage {
     const result = await db.delete(users).where(eq(users.id, id));
     return (result.rowCount || 0) > 0;
   }
+
+
 
   // Métodos para Schedules
   async getAllSchedules(): Promise<Schedule[]> {

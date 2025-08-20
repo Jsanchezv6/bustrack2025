@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { z } from "zod";
+import bcrypt from "bcrypt";
 import { 
   loginSchema, 
   insertScheduleSchema, 
@@ -26,11 +27,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { username, password } = loginSchema.parse(req.body);
       
       const user = await storage.getUserByUsername(username);
-      if (!user || user.password !== password) {
+      if (!user) {
         return res.status(401).json({ message: "Credenciales inválidas" });
       }
 
-      // In production, use proper session management
+      // Verificar contraseña hasheada con bcrypt
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+      if (!isPasswordValid) {
+        return res.status(401).json({ message: "Credenciales inválidas" });
+      }
+
+      // Autenticación exitosa
       res.json({
         id: user.id,
         username: user.username,
@@ -39,6 +46,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         licenseNumber: user.licenseNumber,
       });
     } catch (error) {
+      console.error('Error en login:', error);
       res.status(400).json({ message: "Datos de login inválidos" });
     }
   });
@@ -247,6 +255,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Error interno del servidor" });
     }
   });
+
+
 
   // Location routes
   app.get("/api/locations", async (req, res) => {

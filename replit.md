@@ -45,6 +45,10 @@ Preferred communication style: Simple, everyday language.
 ✓ **Zona Horaria Guatemala Verificada**: Confirmado funcionamiento correcto de cálculos de turnos con "America/Guatemala"
 ✓ **Turnos Perpetuos Implementados**: Cambiado filtro de fecha para mostrar TODOS los turnos activos sin restricción temporal
 ✓ **Sistema de Turnos Mejorado**: Algoritmo optimizado para encontrar turno actual y siguiente de manera inteligente
+✓ **Hasheo Seguro de Contraseñas**: Implementado bcrypt para encriptar contraseñas con salt round 10
+✓ **Migración de Contraseñas**: Convertidas todas las contraseñas existentes de texto plano a hash bcrypt
+✓ **Autenticación Mejorada**: Sistema de login verificando contraseñas hasheadas de forma segura
+✓ **Nuevos Usuarios Protegidos**: Contraseñas de usuarios nuevos automáticamente hasheadas al crear/actualizar
 
 ## System Architecture
 
