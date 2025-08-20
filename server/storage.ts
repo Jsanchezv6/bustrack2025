@@ -7,10 +7,13 @@ import {
   type InsertAssignment,
   type Location,
   type InsertLocation,
+  type Report,
+  type InsertReport,
   users,
   schedules,
   assignments,
-  locations
+  locations,
+  reports
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and } from "drizzle-orm";
@@ -47,6 +50,11 @@ export interface IStorage {
   getAllActiveLocations(): Promise<Location[]>;
   setDriverTransmissionStatus(driverId: string, isTransmitting: boolean): Promise<void>;
   stopDriverTransmission(driverId: string): Promise<void>;
+
+  // Reports
+  createReport(report: InsertReport): Promise<Report>;
+  getAllReports(): Promise<Report[]>;
+  getReportsByDriverId(driverId: string): Promise<Report[]>;
 }
 
 // Implementación de almacenamiento con base de datos PostgreSQL
@@ -350,6 +358,23 @@ export class DatabaseStorage implements IStorage {
         timestamp: new Date()
       })
       .where(eq(locations.driverId, driverId));
+  }
+
+  // Métodos para Reports
+  async createReport(insertReport: InsertReport): Promise<Report> {
+    const [report] = await db
+      .insert(reports)
+      .values(insertReport)
+      .returning();
+    return report;
+  }
+
+  async getAllReports(): Promise<Report[]> {
+    return await db.select().from(reports);
+  }
+
+  async getReportsByDriverId(driverId: string): Promise<Report[]> {
+    return await db.select().from(reports).where(eq(reports.driverId, driverId));
   }
 }
 

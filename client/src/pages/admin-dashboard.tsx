@@ -13,6 +13,7 @@ import { ScheduleModal } from "@/components/schedule-modal";
 import { AssignmentModal } from "@/components/assignment-modal";
 import { GoogleMap } from "@/components/google-map";
 import { UserModal } from "@/components/user-modal";
+import { ReportsTable } from "@/components/reports-table";
 import { 
   Bus, 
   Users, 
@@ -29,7 +30,8 @@ import {
   Navigation,
   UserPlus,
   Shield,
-  Car
+  Car,
+  AlertTriangle
 } from "lucide-react";
 
 export default function AdminDashboard() {
@@ -381,6 +383,13 @@ export default function AdminDashboard() {
                 >
                   <Eye className="w-4 h-4 mr-2" />
                   Monitoreo
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="reports"
+                  className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none"
+                >
+                  <AlertTriangle className="w-4 h-4 mr-2" />
+                  Reportes
                 </TabsTrigger>
               </TabsList>
             </div>
@@ -748,6 +757,15 @@ export default function AdminDashboard() {
                   </tbody>
                 </table>
               </div>
+            </TabsContent>
+
+            {/* Reports Tab */}
+            <TabsContent value="reports" className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-semibold text-gray-800">Reportes de Choferes</h2>
+              </div>
+
+              <ReportsTable />
             </TabsContent>
           </Tabs>
         </Card>

@@ -43,6 +43,15 @@ export const locations = pgTable("locations", {
   isTransmitting: boolean("is_transmitting").default(false),
 });
 
+export const reports = pgTable("reports", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  driverId: varchar("driver_id").references(() => users.id).notNull(),
+  type: text("type").notNull(), // 'atraso', 'incidente', 'otro'
+  description: text("description").notNull(),
+  timestamp: timestamp("timestamp").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -64,6 +73,12 @@ export const insertLocationSchema = createInsertSchema(locations).omit({
   timestamp: true,
 });
 
+export const insertReportSchema = createInsertSchema(reports).omit({
+  id: true,
+  timestamp: true,
+  createdAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -76,6 +91,9 @@ export type InsertAssignment = z.infer<typeof insertAssignmentSchema>;
 
 export type Location = typeof locations.$inferSelect;
 export type InsertLocation = z.infer<typeof insertLocationSchema>;
+
+export type Report = typeof reports.$inferSelect;
+export type InsertReport = z.infer<typeof insertReportSchema>;
 
 // Login schema
 export const loginSchema = z.object({

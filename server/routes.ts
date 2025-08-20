@@ -9,7 +9,8 @@ import {
   insertScheduleSchema, 
   insertAssignmentSchema,
   insertLocationSchema,
-  insertUserSchema
+  insertUserSchema,
+  insertReportSchema
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -333,6 +334,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error deteniendo transmisión:', error);
       res.status(500).json({ message: "Error interno del servidor" });
+    }
+  });
+
+  // Report routes
+  app.get("/api/reports", async (req, res) => {
+    try {
+      const reports = await storage.getAllReports();
+      res.json(reports);
+    } catch (error) {
+      console.error('Error obteniendo reportes:', error);
+      res.status(500).json({ message: "Error al obtener reportes" });
+    }
+  });
+
+  app.post("/api/reports", async (req, res) => {
+    try {
+      const reportData = insertReportSchema.parse(req.body);
+      const report = await storage.createReport(reportData);
+      res.json(report);
+    } catch (error) {
+      console.error('Error creando reporte:', error);
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Datos inválidos", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Error interno del servidor" });
+      }
+    }
+  });
+
+  app.get("/api/reports/driver/:driverId", async (req, res) => {
+    try {
+      const driverId = req.params.driverId;
+      const reports = await storage.getReportsByDriverId(driverId);
+      res.json(reports);
+    } catch (error) {
+      console.error('Error obteniendo reportes del chofer:', error);
+      res.status(500).json({ message: "Error al obtener reportes del chofer" });
     }
   });
 

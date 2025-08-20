@@ -22,6 +22,7 @@ import {
   List,
   Calendar
 } from "lucide-react";
+import { ReportModal } from "@/components/report-modal";
 
 export default function DriverDashboard() {
   const [isTransmitting, setIsTransmitting] = useState(false);
@@ -430,6 +431,13 @@ export default function DriverDashboard() {
                 WebSocket: {isConnected ? 'Conectado' : 'Desconectado'}
               </div>
             </div>
+
+            {/* Botón de reportar incidente */}
+            {currentUser && (
+              <div className="mt-6 max-w-xs mx-auto">
+                <ReportModal driverId={currentUser.id} />
+              </div>
+            )}
           </CardContent>
         </Card>
 
