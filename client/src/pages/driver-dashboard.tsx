@@ -34,6 +34,7 @@ export default function DriverDashboard() {
   const [showShiftQueue, setShowShiftQueue] = useState(false);
   const [activeTab, setActiveTab] = useState("home");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [transmissionInterval, setTransmissionInterval] = useState<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
   const currentUser = authManager.getCurrentUser();
 
@@ -76,24 +77,10 @@ export default function DriverDashboard() {
       }
     };
 
-    // También detectar cuando se pierde el foco de la ventana por mucho tiempo
-    const handleVisibilityChange = () => {
-      if (document.hidden && isTransmitting && currentUser) {
-        // Esperar 30 segundos antes de detener transmisión automáticamente
-        setTimeout(() => {
-          if (document.hidden && isTransmitting) {
-            stopTransmissionSafely();
-          }
-        }, 30000);
-      }
-    };
-
     window.addEventListener('beforeunload', handleBeforeUnload);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
     
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [isTransmitting, currentUser]);
 
@@ -222,12 +209,20 @@ export default function DriverDashboard() {
     }
 
     if (!isTransmitting) {
-      console.log('Iniciando transmisión de ubicación...');
+      console.log('🚀 Iniciando transmisión de ubicación...');
       
-      // Primero obtener ubicación inmediata y luego iniciar tracking continuo
-      forceLocationUpdate();
-      startTracking();
       setIsTransmitting(true);
+      
+      // Enviar ubicación inmediatamente
+      forceLocationUpdate();
+      
+      // Configurar intervalo para enviar ubicación cada 15 segundos
+      const interval = setInterval(() => {
+        console.log('⏰ Ejecutando envío programado de ubicación...');
+        forceLocationUpdate();
+      }, 15000); // 15 segundos
+      
+      setTransmissionInterval(interval);
       
       // Notify server about transmission status
       if (currentUser) {
@@ -240,12 +235,18 @@ export default function DriverDashboard() {
 
       toast({
         title: "Transmisión iniciada",
-        description: "Su ubicación se está compartiendo en tiempo real.",
+        description: "Su ubicación se está compartiendo cada 15 segundos.",
       });
     } else {
-      console.log('Deteniendo transmisión de ubicación...');
-      stopTracking();
+      console.log('🛑 Deteniendo transmisión de ubicación...');
       setIsTransmitting(false);
+      
+      // Limpiar intervalo
+      if (transmissionInterval) {
+        clearInterval(transmissionInterval);
+        setTransmissionInterval(null);
+        console.log('🗑️ Intervalo de transmisión eliminado');
+      }
       
       // Detener transmisión usando el endpoint específico
       if (currentUser) {
@@ -267,11 +268,23 @@ export default function DriverDashboard() {
 
   const handleLogout = async () => {
     if (isTransmitting) {
-      stopTracking();
       setIsTransmitting(false);
+      if (transmissionInterval) {
+        clearInterval(transmissionInterval);
+        setTransmissionInterval(null);
+      }
     }
     await authManager.logout();
   };
+
+  // Limpiar intervalo al desmontar el componente
+  useEffect(() => {
+    return () => {
+      if (transmissionInterval) {
+        clearInterval(transmissionInterval);
+      }
+    };
+  }, [transmissionInterval]);
 
   // Función para forzar una obtención de ubicación nueva
   const forceLocationUpdate = () => {
