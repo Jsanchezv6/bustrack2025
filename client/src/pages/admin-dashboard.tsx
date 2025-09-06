@@ -1026,7 +1026,6 @@ export default function AdminDashboard() {
                             center={mapCenter}
                             zoom={mapZoom}
                             locations={locations.filter((l: Location) => l.isTransmitting)}
-                            drivers={drivers}
                           />
                         </div>
                       </CardContent>
