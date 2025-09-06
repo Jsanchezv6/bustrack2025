@@ -3,6 +3,8 @@ import {
   type InsertUser, 
   type Schedule, 
   type InsertSchedule,
+  type Bus,
+  type InsertBus,
   type Assignment,
   type InsertAssignment,
   type Location,
@@ -11,6 +13,7 @@ import {
   type InsertReport,
   users,
   schedules,
+  buses,
   assignments,
   locations,
   reports
@@ -36,6 +39,13 @@ export interface IStorage {
   createSchedule(schedule: InsertSchedule): Promise<Schedule>;
   updateSchedule(id: string, schedule: Partial<Schedule>): Promise<Schedule | undefined>;
   deleteSchedule(id: string): Promise<boolean>;
+
+  // Buses
+  getAllBuses(): Promise<Bus[]>;
+  getBus(id: string): Promise<Bus | undefined>;
+  createBus(bus: InsertBus): Promise<Bus>;
+  updateBus(id: string, bus: Partial<Bus>): Promise<Bus | undefined>;
+  deleteBus(id: string): Promise<boolean>;
 
   // Assignments
   getAllAssignments(): Promise<Assignment[]>;
@@ -101,10 +111,22 @@ export class DatabaseStorage implements IStorage {
         isActive: true,
       }).returning();
 
+      // Crear bus de muestra
+      const [bus] = await db.insert(buses).values({
+        plateNumber: "P-001AAA",
+        busNumber: "001",
+        model: "Mercedes Benz LO 915",
+        year: 2020,
+        capacity: 45,
+        status: "disponible",
+        isActive: true,
+      }).returning();
+
       // Crear asignación de muestra
       await db.insert(assignments).values({
         driverId: driver.id,
         scheduleId: schedule.id,
+        busId: bus.id,
         assignedDate: new Date().toISOString().split('T')[0],
         shiftStart: "06:00",
         shiftEnd: "14:00",
@@ -170,7 +192,37 @@ export class DatabaseStorage implements IStorage {
     return (result.rowCount || 0) > 0;
   }
 
+  // Métodos para Buses
+  async getAllBuses(): Promise<Bus[]> {
+    return await db.select().from(buses);
+  }
 
+  async getBus(id: string): Promise<Bus | undefined> {
+    const [bus] = await db.select().from(buses).where(eq(buses.id, id));
+    return bus || undefined;
+  }
+
+  async createBus(insertBus: InsertBus): Promise<Bus> {
+    const [bus] = await db
+      .insert(buses)
+      .values(insertBus)
+      .returning();
+    return bus;
+  }
+
+  async updateBus(id: string, busData: Partial<Bus>): Promise<Bus | undefined> {
+    const [updatedBus] = await db
+      .update(buses)
+      .set(busData)
+      .where(eq(buses.id, id))
+      .returning();
+    return updatedBus || undefined;
+  }
+
+  async deleteBus(id: string): Promise<boolean> {
+    const result = await db.delete(buses).where(eq(buses.id, id));
+    return (result.rowCount || 0) > 0;
+  }
 
   // Métodos para Schedules
   async getAllSchedules(): Promise<Schedule[]> {
