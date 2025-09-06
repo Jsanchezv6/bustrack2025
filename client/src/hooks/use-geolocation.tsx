@@ -1,5 +1,22 @@
 import { useEffect, useState, useCallback } from 'react';
 
+// Función para calcular distancia entre dos puntos GPS (en metros)
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371e3; // Radio de la Tierra en metros
+  const φ1 = lat1 * Math.PI / 180; // φ, λ en radianes
+  const φ2 = lat2 * Math.PI / 180;
+  const Δφ = (lat2 - lat1) * Math.PI / 180;
+  const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+  const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+            Math.cos(φ1) * Math.cos(φ2) *
+            Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  const d = R * c; // en metros
+  return d;
+}
+
 interface GeolocationState {
   coordinates: {
     latitude: number;
@@ -35,6 +52,8 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
   });
 
   const [watchId, setWatchId] = useState<number | null>(null);
+  const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
+  const [lastKnownPosition, setLastKnownPosition] = useState<GeolocationPosition | null>(null);
 
   const handleSuccess = useCallback((position: GeolocationPosition) => {
     const coordinates = {
@@ -42,6 +61,7 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
       longitude: position.coords.longitude,
     };
 
+    setLastKnownPosition(position);
     setState(prev => ({
       ...prev,
       coordinates,
@@ -74,12 +94,16 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
 
     onError?.(errorMessage);
 
-    // Clear watch if there's an error
+    // Clear watch and interval if there's an error
     if (watchId !== null) {
       navigator.geolocation.clearWatch(watchId);
       setWatchId(null);
     }
-  }, [watchId, onError]);
+    if (intervalId !== null) {
+      clearInterval(intervalId);
+      setIntervalId(null);
+    }
+  }, [watchId, intervalId, onError]);
 
   const startTracking = useCallback(() => {
     if (!state.isSupported) {
@@ -95,7 +119,7 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
 
     const options: PositionOptions = {
       enableHighAccuracy: true,
-      timeout: 15000,
+      timeout: 10000,
       maximumAge: 0, // Siempre obtener ubicación fresca
     };
 
@@ -105,31 +129,64 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
       error: null,
     }));
 
+    // Función para obtener y enviar ubicación
+    const getCurrentLocationAndSend = () => {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          console.log('🎯 Actualización de ubicación [', new Date().toLocaleTimeString(), ']:', position.coords);
+          console.log('📍 Precisión:', position.coords.accuracy, 'metros');
+          handleSuccess(position);
+        },
+        (error) => {
+          console.error('⚠️ Error obteniendo ubicación:', error);
+          // Si hay error, usar la última posición conocida
+          if (lastKnownPosition) {
+            console.log('📍 Usando última ubicación conocida');
+            handleSuccess(lastKnownPosition);
+          } else {
+            handleError(error);
+          }
+        },
+        options
+      );
+    };
+
     // Get current position first
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        console.log('Ubicación inicial obtenida:', position.coords);
-        console.log('Precisión:', position.coords.accuracy, 'metros');
-        handleSuccess(position);
+    getCurrentLocationAndSend();
+    
+    // Configurar intervalo para enviar ubicación cada 15 segundos
+    const interval = setInterval(() => {
+      getCurrentLocationAndSend();
+    }, 15000); // 15 segundos
+    
+    setIntervalId(interval);
+    console.log('🚀 Transmisión iniciada: enviando ubicación cada 15 segundos');
         
-        // Start watching position con intervalo más frecuente
-        const id = navigator.geolocation.watchPosition(
-          (pos) => {
-            console.log('Actualización de ubicación:', pos.coords);
-            console.log('Precisión:', pos.coords.accuracy, 'metros');
-            console.log('Timestamp:', new Date(pos.timestamp).toLocaleString());
+    // También mantener watchPosition como respaldo para cambios significativos
+    const id = navigator.geolocation.watchPosition(
+      (pos) => {
+        // Solo actualizar si ha habido un cambio significativo en la posición
+        if (lastKnownPosition) {
+          const distance = calculateDistance(
+            lastKnownPosition.coords.latitude,
+            lastKnownPosition.coords.longitude,
+            pos.coords.latitude,
+            pos.coords.longitude
+          );
+          if (distance > 10) { // Solo si se movió más de 10 metros
+            console.log('🏃 Cambio significativo de ubicación detectado (', distance.toFixed(1), 'm)');
             handleSuccess(pos);
-          },
-          handleError,
-          options
-        );
-        
-        setWatchId(id);
+          }
+        } else {
+          handleSuccess(pos);
+        }
       },
       handleError,
       options
     );
-  }, [state.isSupported, state.isTransmitting, enableHighAccuracy, timeout, maximumAge, handleSuccess, handleError]);
+    
+    setWatchId(id);
+  }, [state.isSupported, state.isTransmitting, enableHighAccuracy, timeout, maximumAge, handleSuccess, handleError, lastKnownPosition, intervalId]);
 
   const stopTracking = useCallback(() => {
     if (watchId !== null) {
@@ -137,19 +194,29 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
       setWatchId(null);
     }
 
+    if (intervalId !== null) {
+      clearInterval(intervalId);
+      setIntervalId(null);
+    }
+
     setState(prev => ({
       ...prev,
       isTransmitting: false,
     }));
-  }, [watchId]);
+    
+    console.log('🛑 Transmisión detenida');
+  }, [watchId, intervalId]);
 
   useEffect(() => {
     return () => {
       if (watchId !== null) {
         navigator.geolocation.clearWatch(watchId);
       }
+      if (intervalId !== null) {
+        clearInterval(intervalId);
+      }
     };
-  }, [watchId]);
+  }, [watchId, intervalId]);
 
   return {
     ...state,
