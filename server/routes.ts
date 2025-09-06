@@ -6,7 +6,8 @@ import { z } from "zod";
 import bcrypt from "bcrypt";
 import { 
   loginSchema, 
-  insertScheduleSchema, 
+  insertScheduleSchema,
+  insertBusSchema,
   insertAssignmentSchema,
   insertLocationSchema,
   insertUserSchema,
@@ -132,6 +133,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Horario eliminado" });
     } catch (error) {
       res.status(500).json({ message: "Error al eliminar horario" });
+    }
+  });
+
+  // Bus routes
+  app.get("/api/buses", async (req, res) => {
+    try {
+      const buses = await storage.getAllBuses();
+      res.json(buses);
+    } catch (error) {
+      console.error('Error getting buses:', error);
+      res.status(500).json({ message: "Error al obtener buses" });
+    }
+  });
+
+  app.get("/api/buses/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const bus = await storage.getBus(id);
+      
+      if (!bus) {
+        return res.status(404).json({ message: "Bus no encontrado" });
+      }
+      
+      res.json(bus);
+    } catch (error) {
+      console.error('Error getting bus by ID:', error);
+      res.status(500).json({ message: "Error al obtener bus" });
+    }
+  });
+
+  app.post("/api/buses", async (req, res) => {
+    try {
+      const busData = insertBusSchema.parse(req.body);
+      const bus = await storage.createBus(busData);
+      res.json(bus);
+    } catch (error) {
+      console.error('Error creating bus:', error);
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Datos inválidos", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Error interno del servidor" });
+      }
+    }
+  });
+
+  app.put("/api/buses/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      const bus = await storage.updateBus(id, updates);
+      
+      if (!bus) {
+        return res.status(404).json({ message: "Bus no encontrado" });
+      }
+      
+      res.json(bus);
+    } catch (error) {
+      console.error('Error updating bus:', error);
+      res.status(500).json({ message: "Error al actualizar bus" });
+    }
+  });
+
+  app.delete("/api/buses/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deleteBus(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "Bus no encontrado" });
+      }
+      
+      res.json({ message: "Bus eliminado" });
+    } catch (error) {
+      console.error('Error deleting bus:', error);
+      res.status(500).json({ message: "Error al eliminar bus" });
     }
   });
 
