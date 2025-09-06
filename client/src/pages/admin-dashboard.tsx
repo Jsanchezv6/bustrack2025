@@ -15,7 +15,7 @@ import { UserModal } from "@/components/user-modal";
 import { BusModal } from "@/components/bus-modal";
 import { ReportsTable } from "@/components/reports-table";
 import { 
-  Bus, 
+  Bus as BusIcon, 
   Users, 
   Route, 
   MapPin, 
@@ -216,7 +216,8 @@ export default function AdminDashboard() {
   const assignmentsWithDrivers = assignments.map(assignment => {
     const driver = drivers.find(d => d.id === assignment.driverId);
     const schedule = schedules.find(s => s.id === assignment.scheduleId);
-    return { ...assignment, driver, schedule };
+    const bus = buses.find(b => b.id === assignment.busId);
+    return { ...assignment, driver, schedule, bus };
   });
 
   const uniqueDriversWithAssignments = drivers.map(driver => {
@@ -296,7 +297,7 @@ export default function AdminDashboard() {
           {/* Header del sidebar */}
           <div className="flex items-center justify-between p-4 border-b border-primary-foreground/20">
             <div className="flex items-center space-x-3">
-              <Bus className="w-8 h-8" />
+              <BusIcon className="w-8 h-8" />
               <span className="font-bold text-lg">Admin Panel</span>
             </div>
             <Button
@@ -419,7 +420,7 @@ export default function AdminDashboard() {
                     <CardContent className="p-3 sm:p-6">
                       <div className="flex items-center">
                         <div className="bg-primary bg-opacity-10 p-2 sm:p-3 rounded-full flex-shrink-0">
-                          <Bus className="text-primary text-lg sm:text-xl" />
+                          <BusIcon className="text-primary text-lg sm:text-xl" />
                         </div>
                         <div className="ml-2 sm:ml-4 min-w-0">
                           <h3 className="text-base sm:text-lg font-semibold text-gray-800">{stats.totalBuses}</h3>
@@ -814,6 +815,7 @@ export default function AdminDashboard() {
                       <tr>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Chofer</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ruta</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bus</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Turno</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
@@ -823,11 +825,11 @@ export default function AdminDashboard() {
                     <tbody className="divide-y divide-gray-200">
                       {assignmentsLoading ? (
                         <tr>
-                          <td colSpan={6} className="px-6 py-4 text-center">Cargando...</td>
+                          <td colSpan={7} className="px-6 py-4 text-center">Cargando...</td>
                         </tr>
                       ) : assignmentsWithDrivers.length === 0 ? (
                         <tr>
-                          <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                          <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
                             No hay asignaciones configuradas
                           </td>
                         </tr>
@@ -852,6 +854,18 @@ export default function AdminDashboard() {
                                 </div>
                               ) : (
                                 <span className="text-gray-500">Sin ruta</span>
+                              )}
+                            </td>
+                            <td className="px-6 py-4">
+                              {assignment.bus ? (
+                                <div className="flex items-center">
+                                  <div className="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-2">
+                                    {assignment.bus.busNumber}
+                                  </div>
+                                  <span className="text-sm">{assignment.bus.plateNumber}</span>
+                                </div>
+                              ) : (
+                                <span className="text-gray-500">Sin bus</span>
                               )}
                             </td>
                             <td className="px-6 py-4 text-sm text-gray-500">{assignment.assignedDate}</td>
@@ -914,6 +928,15 @@ export default function AdminDashboard() {
                                   {assignment.schedule.routeNumber}
                                 </div>
                                 <span className="text-sm">{assignment.schedule.routeName}</span>
+                              </div>
+                            )}
+                            
+                            {assignment.bus && (
+                              <div className="flex items-center space-x-2">
+                                <div className="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
+                                  {assignment.bus.busNumber}
+                                </div>
+                                <span className="text-sm">{assignment.bus.plateNumber} - {assignment.bus.model}</span>
                               </div>
                             )}
                             
@@ -1211,6 +1234,7 @@ export default function AdminDashboard() {
         onClose={() => setIsAssignmentModalOpen(false)}
         drivers={availableDrivers}
         schedules={schedules}
+        buses={buses}
       />
 
       <UserModal

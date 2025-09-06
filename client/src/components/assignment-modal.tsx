@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { InsertAssignment, insertAssignmentSchema, User, Schedule } from "@shared/schema";
+import { InsertAssignment, insertAssignmentSchema, User, Schedule, Bus } from "@shared/schema";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,9 +16,10 @@ interface AssignmentModalProps {
   onClose: () => void;
   drivers: User[];
   schedules: Schedule[];
+  buses: Bus[];
 }
 
-export function AssignmentModal({ isOpen, onClose, drivers, schedules }: AssignmentModalProps) {
+export function AssignmentModal({ isOpen, onClose, drivers, schedules, buses }: AssignmentModalProps) {
   const { toast } = useToast();
 
   const form = useForm<InsertAssignment>({
@@ -26,6 +27,7 @@ export function AssignmentModal({ isOpen, onClose, drivers, schedules }: Assignm
     defaultValues: {
       driverId: "",
       scheduleId: "",
+      busId: "",
       assignedDate: new Date().toISOString().split('T')[0],
       shiftStart: "06:00",
       shiftEnd: "14:00",
@@ -117,6 +119,31 @@ export function AssignmentModal({ isOpen, onClose, drivers, schedules }: Assignm
                       {schedules.filter(s => s.isActive).map((schedule) => (
                         <SelectItem key={schedule.id} value={schedule.id}>
                           Ruta {schedule.routeNumber} - {schedule.routeName}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="busId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Bus</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger disabled={createMutation.isPending}>
+                        <SelectValue placeholder="Seleccione un bus" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {buses.filter(b => b.isActive && b.status === 'disponible').map((bus) => (
+                        <SelectItem key={bus.id} value={bus.id}>
+                          {bus.plateNumber} - Unidad #{bus.busNumber} ({bus.model})
                         </SelectItem>
                       ))}
                     </SelectContent>
