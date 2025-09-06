@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useLocation } from "wouter";
 import { LoginRequest, loginSchema } from "@shared/schema";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -15,6 +15,7 @@ import { Bus } from "lucide-react";
 export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const [, navigate] = useLocation();
 
   const form = useForm<LoginRequest>({
     resolver: zodResolver(loginSchema),
@@ -35,6 +36,15 @@ export default function Login() {
         title: "Inicio de sesión exitoso",
         description: `Bienvenido, ${user.fullName}`,
       });
+      
+      // Redirigir según el rol del usuario
+      if (user.role === 'admin') {
+        navigate('/admin');
+      } else if (user.role === 'driver') {
+        navigate('/driver');
+      } else {
+        navigate('/');
+      }
     } catch (error: any) {
       toast({
         variant: "destructive",
