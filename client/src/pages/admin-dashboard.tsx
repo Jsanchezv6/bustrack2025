@@ -7,11 +7,12 @@ import { useToast } from "@/hooks/use-toast";
 import { useWebSocket } from "@/hooks/use-websocket";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { authManager } from "@/lib/auth";
-import { Schedule, Assignment, User, Location } from "@shared/schema";
+import { Schedule, Assignment, User, Location, Bus } from "@shared/schema";
 import { ScheduleModal } from "@/components/schedule-modal";
 import { AssignmentModal } from "@/components/assignment-modal";
 import { GoogleMap } from "@/components/google-map";
 import { UserModal } from "@/components/user-modal";
+import { BusModal } from "@/components/bus-modal";
 import { ReportsTable } from "@/components/reports-table";
 import { 
   Bus, 
@@ -46,6 +47,8 @@ export default function AdminDashboard() {
   const mapRef = useRef<any>(null);
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [isBusModalOpen, setIsBusModalOpen] = useState(false);
+  const [selectedBus, setSelectedBus] = useState<Bus | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
@@ -99,6 +102,10 @@ export default function AdminDashboard() {
     queryKey: ['/api/users'],
   });
 
+  const { data: buses = [], isLoading: busesLoading } = useQuery<Bus[]>({
+    queryKey: ['/api/buses'],
+  });
+
   const { data: locations = [] } = useQuery<Location[]>({
     queryKey: ['/api/locations'],
     refetchInterval: 5000,
@@ -130,6 +137,14 @@ export default function AdminDashboard() {
     },
   });
 
+  const deleteBusMutation = useMutation({
+    mutationFn: (id: string) => apiRequest("DELETE", `/api/buses/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/buses'] });
+      toast({ title: "Bus eliminado correctamente" });
+    },
+  });
+
   // Helper functions
   const handleEditSchedule = (schedule: Schedule) => {
     setSelectedSchedule(schedule);
@@ -145,6 +160,17 @@ export default function AdminDashboard() {
   const handleDeleteAssignment = (id: string) => {
     if (confirm("¿Está seguro de que desea eliminar esta asignación?")) {
       deleteAssignmentMutation.mutate(id);
+    }
+  };
+
+  const handleEditBus = (bus: Bus) => {
+    setSelectedBus(bus);
+    setIsBusModalOpen(true);
+  };
+
+  const handleDeleteBus = (id: string) => {
+    if (confirm("¿Está seguro de que desea eliminar este bus?")) {
+      deleteBusMutation.mutate(id);
     }
   };
 
@@ -206,7 +232,7 @@ export default function AdminDashboard() {
 
   // Stats
   const stats = {
-    totalBuses: schedules.filter(s => s.isActive).length,
+    totalBuses: buses.filter(b => b.isActive).length,
     totalDrivers: drivers.length,
     totalRoutes: schedules.length,
     activeTransmissions: locations.filter((l: Location) => l.isTransmitting).length,
@@ -225,6 +251,12 @@ export default function AdminDashboard() {
       label: "Horarios",
       icon: Calendar,
       description: "Gestión de horarios"
+    },
+    {
+      id: "buses",
+      label: "Buses",
+      icon: Car,
+      description: "Gestión de buses"
     },
     {
       id: "assignments",
@@ -590,6 +622,165 @@ export default function AdminDashboard() {
                               variant="destructive"
                               onClick={() => handleDeleteSchedule(schedule.id)}
                               className="flex-1"
+                            >
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Eliminar
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Sección Buses */}
+            {activeTab === "buses" && (
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-xl font-semibold">Gestión de Buses</h2>
+                  <Button
+                    onClick={() => {
+                      setSelectedBus(null);
+                      setIsBusModalOpen(true);
+                    }}
+                    className="bg-primary hover:bg-primary-dark"
+                    data-testid="button-new-bus"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Nuevo Bus
+                  </Button>
+                </div>
+
+                <div className="hidden lg:block overflow-x-auto">
+                  <table className="w-full table-auto">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Placa</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unidad</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Modelo</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Año</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Capacidad</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {busesLoading ? (
+                        <tr>
+                          <td colSpan={7} className="px-6 py-4 text-center">Cargando...</td>
+                        </tr>
+                      ) : buses.length === 0 ? (
+                        <tr>
+                          <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
+                            No hay buses registrados
+                          </td>
+                        </tr>
+                      ) : (
+                        buses.map((bus) => (
+                          <tr key={bus.id} className="hover:bg-gray-50" data-testid={`row-bus-${bus.id}`}>
+                            <td className="px-6 py-4 font-medium">{bus.plateNumber}</td>
+                            <td className="px-6 py-4">{bus.busNumber}</td>
+                            <td className="px-6 py-4">{bus.model}</td>
+                            <td className="px-6 py-4">{bus.year}</td>
+                            <td className="px-6 py-4">{bus.capacity} pax</td>
+                            <td className="px-6 py-4">
+                              <Badge 
+                                variant={
+                                  bus.status === "disponible" ? "default" :
+                                  bus.status === "en_servicio" ? "secondary" :
+                                  bus.status === "mantenimiento" ? "outline" :
+                                  "destructive"
+                                }
+                              >
+                                {bus.status === "disponible" ? "Disponible" :
+                                 bus.status === "en_servicio" ? "En Servicio" :
+                                 bus.status === "mantenimiento" ? "Mantenimiento" :
+                                 "Fuera de Servicio"}
+                              </Badge>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="flex space-x-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleEditBus(bus)}
+                                  data-testid={`button-edit-bus-${bus.id}`}
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => handleDeleteBus(bus.id)}
+                                  data-testid={`button-delete-bus-${bus.id}`}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Vista móvil para buses */}
+                <div className="lg:hidden space-y-4">
+                  {busesLoading ? (
+                    <Card>
+                      <CardContent className="p-4 text-center">Cargando...</CardContent>
+                    </Card>
+                  ) : buses.length === 0 ? (
+                    <Card>
+                      <CardContent className="p-4 text-center text-gray-500">
+                        No hay buses registrados
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    buses.map((bus) => (
+                      <Card key={bus.id} data-testid={`card-bus-${bus.id}`}>
+                        <CardContent className="p-4 space-y-3">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <p className="font-semibold text-lg">{bus.plateNumber}</p>
+                              <p className="text-sm text-gray-600">Unidad #{bus.busNumber}</p>
+                              <p className="text-sm text-gray-600">{bus.model} ({bus.year})</p>
+                              <p className="text-sm text-gray-600">Capacidad: {bus.capacity} pasajeros</p>
+                            </div>
+                            <Badge 
+                              variant={
+                                bus.status === "disponible" ? "default" :
+                                bus.status === "en_servicio" ? "secondary" :
+                                bus.status === "mantenimiento" ? "outline" :
+                                "destructive"
+                              }
+                            >
+                              {bus.status === "disponible" ? "Disponible" :
+                               bus.status === "en_servicio" ? "En Servicio" :
+                               bus.status === "mantenimiento" ? "Mantenimiento" :
+                               "Fuera de Servicio"}
+                            </Badge>
+                          </div>
+                          <div className="flex space-x-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleEditBus(bus)}
+                              className="flex-1"
+                              data-testid={`button-edit-bus-mobile-${bus.id}`}
+                            >
+                              <Edit className="w-4 h-4 mr-2" />
+                              Editar
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => handleDeleteBus(bus.id)}
+                              className="flex-1"
+                              data-testid={`button-delete-bus-mobile-${bus.id}`}
                             >
                               <Trash2 className="w-4 h-4 mr-2" />
                               Eliminar
@@ -1029,6 +1220,15 @@ export default function AdminDashboard() {
           setSelectedUser(null);
         }}
         user={selectedUser}
+      />
+
+      <BusModal
+        isOpen={isBusModalOpen}
+        onClose={() => {
+          setIsBusModalOpen(false);
+          setSelectedBus(null);
+        }}
+        bus={selectedBus}
       />
     </div>
   );
