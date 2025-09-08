@@ -25,9 +25,10 @@ import {
   X,
   Home,
   Car,
-  AlertTriangle
+  AlertTriangle,
+  RefreshCw
 } from "lucide-react";
-import { ReportModal } from "@/components/report-modal";
+import { StatusModal } from "@/components/status-modal";
 
 export default function DriverDashboard() {
   const [isTransmitting, setIsTransmitting] = useState(false);
@@ -374,10 +375,10 @@ export default function DriverDashboard() {
       description: "Turnos asignados"
     },
     {
-      id: "reports",
-      label: "Reportar",
-      icon: AlertTriangle,
-      description: "Reportar incidentes"
+      id: "status",
+      label: "Estado",
+      icon: RefreshCw,
+      description: "Actualizar estado"
     }
   ];
 
@@ -578,10 +579,13 @@ export default function DriverDashboard() {
               </div>
             </div>
 
-            {/* Botón de reportar incidente */}
+            {/* Botón de actualizar estado */}
             {currentUser && (
               <div className="mt-6 max-w-xs mx-auto">
-                <ReportModal driverId={currentUser.id} />
+                <StatusModal 
+                  driverId={currentUser.id} 
+                  currentStatus={currentUser.driverStatus || "disponible"}
+                />
               </div>
             )}
           </CardContent>
@@ -796,21 +800,43 @@ export default function DriverDashboard() {
               </div>
             )}
 
-            {/* Sección Reportes */}
-            {activeTab === "reports" && (
+            {/* Sección Estado */}
+            {activeTab === "status" && (
               <div className="space-y-6">
                 <Card>
                   <CardContent className="p-6 text-center">
-                    <AlertTriangle className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-gray-800 mb-4">Reportar Incidente</h3>
+                    <RefreshCw className="w-16 h-16 text-blue-500 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold text-gray-800 mb-4">Actualizar Estado</h3>
                     <p className="text-gray-600 mb-6">
-                      Use este formulario para reportar cualquier incidente o problema durante su turno.
+                      Mantenga su estado actualizado para informar a los pasajeros sobre su situación actual.
                     </p>
                     {currentUser && (
-                      <div className="max-w-xs mx-auto">
-                        <ReportModal driverId={currentUser.id} />
+                      <div className="max-w-xs mx-auto mb-6">
+                        <StatusModal 
+                          driverId={currentUser.id} 
+                          currentStatus={currentUser.driverStatus || "disponible"}
+                        />
                       </div>
                     )}
+                    
+                    {/* Mostrar estado actual */}
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <h4 className="font-medium text-blue-800 mb-2">Estado Actual:</h4>
+                      <p className="text-blue-600">
+                        {(() => {
+                          const status = currentUser?.driverStatus || "disponible";
+                          const statusLabels = {
+                            "disponible": "🟢 Disponible",
+                            "en_ruta_cargar": "🟡 En ruta a cargar",
+                            "en_ruta_descargar": "🟠 En ruta a descargar",
+                            "cargando": "🔵 Cargando",
+                            "descargando": "🟣 Descargando",
+                            "no_disponible": "🔴 No disponible"
+                          };
+                          return statusLabels[status as keyof typeof statusLabels] || status;
+                        })()} 
+                      </p>
+                    </div>
                   </CardContent>
                 </Card>
               </div>

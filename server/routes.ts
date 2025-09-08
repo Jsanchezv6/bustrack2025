@@ -333,6 +333,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update driver status
+  app.put("/api/users/:id/status", async (req, res) => {
+    try {
+      const userId = req.params.id;
+      const statusSchema = z.object({
+        driverStatus: z.enum(["disponible", "en_ruta_cargar", "en_ruta_descargar", "cargando", "descargando", "no_disponible"])
+      });
+      
+      const { driverStatus } = statusSchema.parse(req.body);
+      const updatedUser = await storage.updateUser(userId, { driverStatus });
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "Usuario no encontrado" });
+      }
+      
+      res.json({
+        success: true,
+        user: {
+          id: updatedUser.id,
+          driverStatus: updatedUser.driverStatus
+        }
+      });
+    } catch (error) {
+      console.error('Error updating driver status:', error);
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Estado inválido", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Error interno del servidor" });
+      }
+    }
+  });
+
 
 
   // Location routes
