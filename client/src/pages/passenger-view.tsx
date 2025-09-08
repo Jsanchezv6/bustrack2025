@@ -32,9 +32,10 @@ export default function PassengerView({ onBackToLogin }: PassengerViewProps) {
     queryKey: ['/api/schedules'],
   });
 
-  // Consultar usuarios para obtener nombres de choferes
+  // Consultar usuarios para obtener nombres de choferes y estados
   const { data: users = [] } = useQuery<User[]>({
     queryKey: ['/api/users'],
+    refetchInterval: 5000, // Actualizar cada 5 segundos para mostrar cambios de estado
   });
 
   // Consultar buses para obtener modelos
