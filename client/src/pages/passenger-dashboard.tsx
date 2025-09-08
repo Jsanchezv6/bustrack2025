@@ -85,7 +85,7 @@ export default function PassengerDashboard() {
   const getDriverRoute = (driverId: string) => {
     const assignment = assignments.find(a => a.driverId === driverId);
     if (assignment) {
-      return routes.find(r => r.id === assignment.routeId);
+      return routes.find(r => r.id === assignment.scheduleId);
     }
     return null;
   };
@@ -190,7 +190,6 @@ export default function PassengerDashboard() {
                   <CardContent className="p-0">
                     <div className="h-96 w-full rounded-lg overflow-hidden">
                       <GoogleMap
-                        ref={mapRef}
                         center={mapCenter}
                         zoom={mapZoom}
                         locations={activeLocations}
@@ -227,11 +226,11 @@ export default function PassengerDashboard() {
                                 </p>
                               )}
                               <p className="text-xs text-gray-500 mt-1">
-                                Actualizado: {new Date(location.timestamp).toLocaleTimeString('es-GT', {
+                                Actualizado: {location.timestamp ? new Date(location.timestamp).toLocaleTimeString('es-GT', {
                                   timeZone: 'America/Guatemala',
                                   hour: '2-digit',
                                   minute: '2-digit'
-                                })}
+                                }) : 'Sin fecha'}
                               </p>
                             </div>
                             <Button
@@ -315,7 +314,7 @@ export default function PassengerDashboard() {
                         
                         {/* Mostrar si hay buses activos en esta ruta */}
                         {(() => {
-                          const routeAssignments = assignments.filter(a => a.routeId === route.id);
+                          const routeAssignments = assignments.filter(a => a.scheduleId === route.id);
                           const activeBuses = routeAssignments.filter(assignment => 
                             activeLocations.some(loc => 
                               loc.driverId === assignment.driverId && loc.isTransmitting
