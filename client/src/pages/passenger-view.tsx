@@ -81,6 +81,28 @@ export default function PassengerView({ onBackToLogin }: PassengerViewProps) {
     });
   };
 
+  // Obtener etiqueta y color para el estado del chofer
+  const getDriverStatusDisplay = (driverStatus: string | null | undefined, isTransmitting: boolean) => {
+    if (!isTransmitting) {
+      return {
+        label: "🔴 Inactivo",
+        variant: "secondary" as const,
+        className: ""
+      };
+    }
+
+    const statusLabels: Record<string, { label: string; variant: "default" | "secondary"; className: string }> = {
+      "disponible": { label: "🟢 Disponible", variant: "default", className: "bg-green-600" },
+      "en_ruta_cargar": { label: "🟡 En ruta a cargar", variant: "default", className: "bg-yellow-600" },
+      "en_ruta_descargar": { label: "🟠 En ruta a descargar", variant: "default", className: "bg-orange-600" },
+      "cargando": { label: "🔵 Cargando", variant: "default", className: "bg-blue-600" },
+      "descargando": { label: "🟣 Descargando", variant: "default", className: "bg-purple-600" },
+      "no_disponible": { label: "🔴 No disponible", variant: "secondary", className: "bg-red-600" }
+    };
+
+    return statusLabels[driverStatus || "disponible"] || statusLabels["disponible"];
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -238,13 +260,18 @@ export default function PassengerView({ onBackToLogin }: PassengerViewProps) {
                                 </div>
                               </div>
                               <div className="flex items-center space-x-2">
-                                <Badge 
-                                  variant={isTransmitting ? "default" : "secondary"}
-                                  className={isTransmitting ? "bg-green-600" : ""}
-                                  data-testid={`badge-status-${index}`}
-                                >
-                                  {isTransmitting ? "En servicio" : "Inactivo"}
-                                </Badge>
+                                {(() => {
+                                  const statusDisplay = getDriverStatusDisplay(driver?.driverStatus, isTransmitting);
+                                  return (
+                                    <Badge 
+                                      variant={statusDisplay.variant}
+                                      className={statusDisplay.className}
+                                      data-testid={`badge-status-${index}`}
+                                    >
+                                      {statusDisplay.label}
+                                    </Badge>
+                                  );
+                                })()}
                                 {isTransmitting && (
                                   <Button
                                     size="sm"
