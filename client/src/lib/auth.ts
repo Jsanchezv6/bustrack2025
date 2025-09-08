@@ -6,6 +6,7 @@ export interface AuthUser {
   role: 'admin' | 'driver';
   fullName: string;
   licenseNumber: string | null;
+  driverStatus?: string | null;
 }
 
 class AuthManager {

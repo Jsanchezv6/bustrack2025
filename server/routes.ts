@@ -46,6 +46,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         role: user.role,
         fullName: user.fullName,
         licenseNumber: user.licenseNumber,
+        driverStatus: user.driverStatus,
       });
     } catch (error) {
       console.error('Error en login:', error);
