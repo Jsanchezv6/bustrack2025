@@ -111,6 +111,48 @@ export default function AdminDashboard() {
     refetchInterval: 5000,
   });
 
+  // Helper functions for passenger-like display
+  const formatTime = (timeString: string) => {
+    return new Date(`2000-01-01T${timeString}`).toLocaleTimeString('es-GT', {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'America/Guatemala'
+    });
+  };
+
+  const getDriverStatusDisplay = (driverStatus: string | null | undefined, isTransmitting: boolean) => {
+    if (!isTransmitting) {
+      return {
+        label: "🔴 Inactivo",
+        variant: "secondary" as const,
+        className: ""
+      };
+    }
+
+    const statusLabels: Record<string, { label: string; variant: "default" | "secondary"; className: string }> = {
+      "disponible": { label: "🟢 Disponible", variant: "default", className: "bg-green-600" },
+      "en_ruta_cargar": { label: "🟡 En ruta a cargar", variant: "default", className: "bg-yellow-600" },
+      "en_ruta_descargar": { label: "🟠 En ruta a descargar", variant: "default", className: "bg-orange-600" },
+      "cargando": { label: "🔵 Cargando", variant: "default", className: "bg-blue-600" },
+      "descargando": { label: "🟣 Descargando", variant: "default", className: "bg-purple-600" },
+      "no_disponible": { label: "🔴 No disponible", variant: "secondary", className: "bg-red-600" }
+    };
+
+    return statusLabels[driverStatus || "disponible"] || statusLabels["disponible"];
+  };
+
+  const getRouteInfo = (scheduleId: string) => {
+    return schedules.find((route) => route.id === scheduleId);
+  };
+
+  const getBusInfo = (busId: string) => {
+    return buses.find((bus) => bus.id === busId);
+  };
+
+  const getDriverInfo = (driverId: string) => {
+    return users.find((user) => user.id === driverId);
+  };
+
   // Mutations
   const deleteScheduleMutation = useMutation({
     mutationFn: (id: string) => apiRequest("DELETE", `/api/schedules/${id}`),
