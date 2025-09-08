@@ -249,9 +249,9 @@ export default function AdminDashboard() {
     },
     {
       id: "schedules",
-      label: "Horarios",
+      label: "Rutas",
       icon: Calendar,
-      description: "Gestión de horarios"
+      description: "Gestión de rutas"
     },
     {
       id: "buses",
@@ -500,17 +500,17 @@ export default function AdminDashboard() {
               </div>
             )}
 
-            {/* Sección Horarios */}
+            {/* Sección Rutas */}
             {activeTab === "schedules" && (
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
-                  <h2 className="text-xl font-semibold">Gestión de Horarios</h2>
+                  <h2 className="text-xl font-semibold">Gestión de Rutas</h2>
                   <Button
                     onClick={() => setIsScheduleModalOpen(true)}
                     className="bg-primary hover:bg-primary-dark"
                   >
                     <Plus className="w-4 h-4 mr-2" />
-                    Nuevo Horario
+                    Nueva Ruta
                   </Button>
                 </div>
 
@@ -533,7 +533,7 @@ export default function AdminDashboard() {
                       ) : schedules.length === 0 ? (
                         <tr>
                           <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
-                            No hay horarios configurados
+                            No hay rutas configuradas
                           </td>
                         </tr>
                       ) : (
@@ -578,7 +578,7 @@ export default function AdminDashboard() {
                   </table>
                 </div>
 
-                {/* Vista móvil para horarios */}
+                {/* Vista móvil para rutas */}
                 <div className="lg:hidden space-y-4">
                   {schedulesLoading ? (
                     <Card>
@@ -587,7 +587,7 @@ export default function AdminDashboard() {
                   ) : schedules.length === 0 ? (
                     <Card>
                       <CardContent className="p-4 text-center text-gray-500">
-                        No hay horarios configurados
+                        No hay rutas configuradas
                       </CardContent>
                     </Card>
                   ) : (

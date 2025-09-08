@@ -75,7 +75,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const schedules = await storage.getAllSchedules();
       res.json(schedules);
     } catch (error) {
-      res.status(500).json({ message: "Error al obtener horarios" });
+      res.status(500).json({ message: "Error al obtener rutas" });
     }
   });
 
@@ -85,13 +85,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const schedule = await storage.getSchedule(id);
       
       if (!schedule) {
-        return res.status(404).json({ message: "Horario no encontrado" });
+        return res.status(404).json({ message: "Ruta no encontrada" });
       }
       
       res.json(schedule);
     } catch (error) {
       console.error('Error getting schedule by ID:', error);
-      res.status(500).json({ message: "Error al obtener horario" });
+      res.status(500).json({ message: "Error al obtener ruta" });
     }
   });
 
@@ -101,7 +101,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const schedule = await storage.createSchedule(scheduleData);
       res.json(schedule);
     } catch (error) {
-      res.status(400).json({ message: "Datos de horario inválidos" });
+      res.status(400).json({ message: "Datos de ruta inválidos" });
     }
   });
 
@@ -112,7 +112,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const schedule = await storage.updateSchedule(id, updates);
       
       if (!schedule) {
-        return res.status(404).json({ message: "Horario no encontrado" });
+        return res.status(404).json({ message: "Ruta no encontrada" });
       }
       
       res.json(schedule);
@@ -127,7 +127,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const deleted = await storage.deleteSchedule(id);
       
       if (!deleted) {
-        return res.status(404).json({ message: "Horario no encontrado" });
+        return res.status(404).json({ message: "Ruta no encontrada" });
       }
       
       res.json({ message: "Horario eliminado" });
