@@ -1016,42 +1016,71 @@ export default function AdminDashboard() {
                     <Card>
                       <CardContent className="p-4 sm:p-6">
                         <h3 className="text-lg font-semibold mb-4">Estado de Choferes</h3>
-                        <div className="space-y-3">
-                          {uniqueDriversWithAssignments.length === 0 ? (
-                            <p className="text-sm text-gray-500">No hay choferes asignados</p>
+                        <div className="space-y-3 max-h-96 overflow-y-auto">
+                          {assignments.length === 0 ? (
+                            <div className="text-center py-4">
+                              <Car className="h-12 w-12 text-gray-300 mx-auto mb-2" />
+                              <p className="text-gray-500">No hay asignaciones programadas</p>
+                            </div>
                           ) : (
-                            uniqueDriversWithAssignments.map(({ driver, firstAssignment }) => {
-                              const isTransmitting = locations.some((l: Location) => l.driverId === driver.id && l.isTransmitting);
-                              
-                              return (
-                                <div key={driver.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                  <div className="flex items-center space-x-3">
-                                    <div className="bg-secondary text-white rounded-full w-8 h-8 flex items-center justify-center text-sm">
-                                      <Car className="w-4 h-4" />
-                                    </div>
-                                    <div>
-                                      <p className="font-medium text-sm">{driver.fullName}</p>
-                                      {firstAssignment?.schedule && (
-                                        <p className="text-xs text-gray-500">
-                                          Ruta {firstAssignment.schedule.routeNumber}
+                            assignments
+                              .sort((a, b) => a.shiftStart.localeCompare(b.shiftStart))
+                              .map((assignment, index) => {
+                                const route = getRouteInfo(assignment.scheduleId);
+                                const driver = getDriverInfo(assignment.driverId);
+                                const bus = getBusInfo(assignment.busId);
+                                const driverLocation = locations.find(loc => loc.driverId === assignment.driverId);
+                                const isTransmitting = driverLocation?.isTransmitting || false;
+                                
+                                return (
+                                  <div key={assignment.id} className="p-3 border rounded-lg hover:bg-gray-50">
+                                    <div className="flex items-center justify-between mb-2">
+                                      <div className="flex-1">
+                                        <p className="font-medium text-sm" data-testid={`text-route-${index}`}>
+                                          {route?.routeName || 'Ruta sin nombre'}
                                         </p>
-                                      )}
+                                        <p className="text-xs text-gray-600">
+                                          {formatTime(assignment.shiftStart)} - {formatTime(assignment.shiftEnd)}
+                                        </p>
+                                        <div className="mt-1 space-y-1">
+                                          <p className="text-xs text-gray-500 flex items-center">
+                                            <span className="mr-1">👤</span>
+                                            {driver?.fullName || 'No asignado'}
+                                          </p>
+                                          <p className="text-xs text-gray-500 flex items-center">
+                                            <span className="mr-1">🚌</span>
+                                            {bus?.model || 'No especificado'} ({bus?.busNumber || 'N/A'})
+                                          </p>
+                                        </div>
+                                      </div>
+                                      <div className="flex flex-col items-end space-y-2">
+                                        {(() => {
+                                          const statusDisplay = getDriverStatusDisplay(driver?.driverStatus, isTransmitting);
+                                          return (
+                                            <Badge 
+                                              variant={statusDisplay.variant}
+                                              className={`${statusDisplay.className} text-xs`}
+                                              data-testid={`badge-status-${index}`}
+                                            >
+                                              {statusDisplay.label}
+                                            </Badge>
+                                          );
+                                        })()}
+                                        {isTransmitting && (
+                                          <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => locateDriver(assignment.driverId)}
+                                            data-testid={`button-track-driver-${index}`}
+                                          >
+                                            <Navigation className="h-3 w-3" />
+                                          </Button>
+                                        )}
+                                      </div>
                                     </div>
                                   </div>
-                                  <div className="flex items-center space-x-2">
-                                    <Circle className={`w-3 h-3 ${isTransmitting ? 'text-green-500 fill-current' : 'text-red-500'}`} />
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      onClick={() => locateDriver(driver.id)}
-                                      disabled={!isTransmitting}
-                                    >
-                                      <Navigation className="w-3 h-3" />
-                                    </Button>
-                                  </div>
-                                </div>
-                              );
-                            })
+                                );
+                              })
                           )}
                         </div>
                       </CardContent>
