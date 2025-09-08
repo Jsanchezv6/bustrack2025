@@ -193,7 +193,6 @@ export default function PassengerDashboard() {
                         center={mapCenter}
                         zoom={mapZoom}
                         locations={activeLocations}
-                        drivers={drivers}
                       />
                     </div>
                   </CardContent>
