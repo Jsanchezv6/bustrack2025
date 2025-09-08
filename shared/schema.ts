@@ -10,6 +10,7 @@ export const users = pgTable("users", {
   role: text("role").notNull(), // 'admin' | 'driver'
   fullName: text("full_name").notNull(),
   licenseNumber: text("license_number"),
+  driverStatus: text("driver_status").default("disponible"), // Estado del chofer: 'disponible', 'en_ruta_cargar', 'en_ruta_descargar', 'cargando', 'descargando', 'no_disponible'
   createdAt: timestamp("created_at").defaultNow(),
 });
 
