@@ -7,7 +7,6 @@ import { useAuth } from "@/hooks/use-auth";
 import Login from "@/pages/login";
 import AdminDashboard from "@/pages/admin-dashboard";
 import DriverDashboard from "@/pages/driver-dashboard";
-import PassengerDashboard from "@/pages/passenger-dashboard";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -21,32 +20,22 @@ function Router() {
     );
   }
 
+  if (!user) {
+    return <Login />;
+  }
+
   return (
     <Switch>
-      {/* Ruta pública para pasajeros - sin autenticación requerida */}
-      <Route path="/pasajeros">
-        <PassengerDashboard />
+      <Route path="/">
+        {user.role === 'admin' ? <AdminDashboard /> : <DriverDashboard />}
       </Route>
-      
-      {/* Rutas que requieren autenticación */}
-      {!user ? (
-        <Route>
-          <Login />
-        </Route>
-      ) : (
-        <>
-          <Route path="/">
-            {user.role === 'admin' ? <AdminDashboard /> : <DriverDashboard />}
-          </Route>
-          <Route path="/admin">
-            {user.role === 'admin' ? <AdminDashboard /> : <NotFound />}
-          </Route>
-          <Route path="/driver">
-            {user.role === 'driver' ? <DriverDashboard /> : <NotFound />}
-          </Route>
-          <Route component={NotFound} />
-        </>
-      )}
+      <Route path="/admin">
+        {user.role === 'admin' ? <AdminDashboard /> : <NotFound />}
+      </Route>
+      <Route path="/driver">
+        {user.role === 'driver' ? <DriverDashboard /> : <NotFound />}
+      </Route>
+      <Route component={NotFound} />
     </Switch>
   );
 }

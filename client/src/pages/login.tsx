@@ -10,7 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { authManager } from "@/lib/auth";
-import { Bus, Users } from "lucide-react";
+import { Bus } from "lucide-react";
 
 export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
@@ -66,7 +66,6 @@ export default function Login() {
             </div>
             <h1 className="text-2xl font-bold text-gray-800">Sistema de Transporte</h1>
             <p className="text-gray-600 mt-2">Gestión y Monitoreo</p>
-            <p className="text-xs text-gray-500 mt-1">Para administradores y choferes</p>
           </div>
 
           <Form {...form}>
@@ -108,6 +107,8 @@ export default function Login() {
                 )}
               />
 
+
+
               <Button
                 type="submit"
                 className="w-full bg-primary hover:bg-primary-dark"
@@ -117,27 +118,6 @@ export default function Login() {
               </Button>
             </form>
           </Form>
-
-          {/* Separador */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-gray-500">O</span>
-            </div>
-          </div>
-
-          {/* Botón para acceso público de pasajeros */}
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full"
-            onClick={() => navigate('/pasajeros')}
-          >
-            <Users className="w-4 h-4 mr-2" />
-            Acceso Público - Información para Pasajeros
-          </Button>
 
 
         </CardContent>
