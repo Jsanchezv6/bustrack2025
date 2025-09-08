@@ -141,8 +141,9 @@ export function GoogleMap({ locations, center, zoom = 13, className = "w-full h-
 
     setMarkers(newMarkers);
 
-    // Ajustar vista para mostrar todos los marcadores
-    if (newMarkers.length > 0) {
+    // Solo ajustar vista para mostrar todos los marcadores si center y zoom no se han especificado explícitamente
+    // Esto evita que anule el zoom específico cuando se localiza un chofer
+    if (newMarkers.length > 0 && (!center || zoom === 13)) {
       const bounds = new (google as any).maps.LatLngBounds();
       newMarkers.forEach((marker: any) => {
         const position = marker.getPosition();
@@ -150,7 +151,16 @@ export function GoogleMap({ locations, center, zoom = 13, className = "w-full h-
       });
       map.fitBounds(bounds);
     }
-  }, [map, locations]);
+  }, [map, locations, center, zoom]);
+
+  // Actualizar center y zoom cuando cambien las props
+  useEffect(() => {
+    if (!map || !center) return;
+    
+    console.log('Actualizando centro del mapa a:', center, 'zoom:', zoom);
+    map.setCenter(center);
+    map.setZoom(zoom);
+  }, [map, center, zoom]);
 
   if (error) {
     return (

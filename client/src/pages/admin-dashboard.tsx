@@ -218,38 +218,50 @@ export default function AdminDashboard() {
 
   const locateDriver = async (driverId: string) => {
     try {
-      const allLocations = await queryClient.fetchQuery({
-        queryKey: ['/api/locations'],
-      });
-      
-      const driverLocation = (allLocations as Location[]).find((l: Location) => 
+      // Buscar la ubicación específica del chofer
+      const driverLocation = locations.find((l: Location) => 
         l.driverId === driverId && l.isTransmitting
       );
+      
+      console.log('Localizando chofer:', driverId, 'Ubicación encontrada:', driverLocation);
       
       if (driverLocation) {
         const lat = parseFloat(driverLocation.latitude);
         const lng = parseFloat(driverLocation.longitude);
         
+        console.log(`Centrando mapa en chofer ${driverId}:`, { lat, lng });
+        
+        // Forzar zoom alto para enfocar específicamente en el chofer
         setMapCenter({ lat, lng });
-        setMapZoom(16);
+        setMapZoom(18);
+        
+        // Usar referencia del mapa si está disponible para forzar el cambio
+        if (mapRef.current && mapRef.current.panTo && mapRef.current.setZoom) {
+          mapRef.current.panTo({ lat, lng });
+          mapRef.current.setZoom(18);
+        }
         
         toast({
           title: "Ubicación encontrada",
-          description: `Chofer localizado en: ${lat.toFixed(4)}, ${lng.toFixed(4)}`,
+          description: `Chofer localizado exitosamente`,
         });
       } else {
+        // Buscar en todas las ubicaciones por si está en otra lista
+        const allDriverLocations = locations.filter((l: Location) => l.driverId === driverId);
+        console.log(`Ubicaciones del chofer ${driverId}:`, allDriverLocations);
+        
         toast({
           variant: "destructive",
-          title: "Sin ubicación",
-          description: "El chofer no ha enviado ninguna ubicación",
+          title: "Sin ubicación activa",
+          description: "El chofer no está transmitiendo actualmente",
         });
       }
     } catch (error) {
-      console.error('Error al obtener ubicación del chofer:', error);
+      console.error('Error al localizar chofer:', error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "No se pudo obtener la ubicación del chofer",
+        description: "No se pudo localizar el chofer",
       });
     }
   };
