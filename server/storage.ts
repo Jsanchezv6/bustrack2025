@@ -1,8 +1,8 @@
 import { 
   type User, 
   type InsertUser, 
-  type Schedule, 
-  type InsertSchedule,
+  type Route, 
+  type InsertRoute,
   type Bus,
   type InsertBus,
   type Assignment,
@@ -12,7 +12,7 @@ import {
   type Report,
   type InsertReport,
   users,
-  schedules,
+  routes,
   buses,
   assignments,
   locations,
@@ -33,11 +33,11 @@ export interface IStorage {
   updateUser(id: string, user: Partial<User>): Promise<User | undefined>;
   deleteUser(id: string): Promise<boolean>;
 
-  // Schedules
-  getAllSchedules(): Promise<Schedule[]>;
-  getSchedule(id: string): Promise<Schedule | undefined>;
-  createSchedule(schedule: InsertSchedule): Promise<Schedule>;
-  updateSchedule(id: string, schedule: Partial<Schedule>): Promise<Schedule | undefined>;
+  // Routes
+  getAllSchedules(): Promise<Route[]>;
+  getSchedule(id: string): Promise<Route | undefined>;
+  createSchedule(schedule: InsertRoute): Promise<Route>;
+  updateSchedule(id: string, schedule: Partial<Route>): Promise<Route | undefined>;
   deleteSchedule(id: string): Promise<boolean>;
 
   // Buses
@@ -103,7 +103,7 @@ export class DatabaseStorage implements IStorage {
       }).returning();
 
       // Crear horario de muestra
-      const [schedule] = await db.insert(schedules).values({
+      const [schedule] = await db.insert(routes).values({
         routeName: "Centro - Universidad",
         routeNumber: 1,
         startTime: "06:00",
@@ -226,17 +226,17 @@ export class DatabaseStorage implements IStorage {
 
   // Métodos para Schedules
   async getAllSchedules(): Promise<Schedule[]> {
-    return await db.select().from(schedules);
+    return await db.select().from(routes);
   }
 
   async getSchedule(id: string): Promise<Schedule | undefined> {
-    const [schedule] = await db.select().from(schedules).where(eq(schedules.id, id));
+    const [schedule] = await db.select().from(routes).where(eq(routes.id, id));
     return schedule || undefined;
   }
 
   async createSchedule(insertSchedule: InsertSchedule): Promise<Schedule> {
     const [schedule] = await db
-      .insert(schedules)
+      .insert(routes)
       .values(insertSchedule)
       .returning();
     return schedule;
@@ -244,15 +244,15 @@ export class DatabaseStorage implements IStorage {
 
   async updateSchedule(id: string, updates: Partial<Schedule>): Promise<Schedule | undefined> {
     const [updated] = await db
-      .update(schedules)
+      .update(routes)
       .set(updates)
-      .where(eq(schedules.id, id))
+      .where(eq(routes.id, id))
       .returning();
     return updated || undefined;
   }
 
   async deleteSchedule(id: string): Promise<boolean> {
-    const result = await db.delete(schedules).where(eq(schedules.id, id));
+    const result = await db.delete(routes).where(eq(routes.id, id));
     return (result.rowCount || 0) > 0;
   }
 
