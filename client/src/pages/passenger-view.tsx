@@ -167,47 +167,6 @@ export default function PassengerView({ onBackToLogin }: PassengerViewProps) {
 
           {/* Panel de información */}
           <div className="space-y-6">
-            {/* Buses Activos */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Bus className="h-5 w-5" />
-                  <span>Buses Activos</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {transmittingDrivers.length === 0 ? (
-                  <div className="text-center py-4">
-                    <Bus className="h-12 w-12 text-gray-300 mx-auto mb-2" />
-                    <p className="text-gray-500">No hay buses transmitiendo</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {transmittingDrivers.map((location, index) => (
-                      <div key={location.id} className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
-                        <div>
-                          <p className="font-medium text-green-800" data-testid={`text-driver-${index}`}>
-                            Bus #{index + 1}
-                          </p>
-                          <p className="text-sm text-green-600">
-                            Transmitiendo
-                          </p>
-                        </div>
-                        <Button
-                          size="sm"
-                          onClick={() => centerOnDriver(location.driverId)}
-                          className="bg-green-600 hover:bg-green-700"
-                          data-testid={`button-locate-driver-${index}`}
-                        >
-                          <Navigation className="h-4 w-4 mr-1" />
-                          Localizar
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
 
             {/* Horarios/Turnos */}
             <Card>
