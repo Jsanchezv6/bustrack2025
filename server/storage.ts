@@ -225,16 +225,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Métodos para Schedules
-  async getAllSchedules(): Promise<Schedule[]> {
+  async getAllSchedules(): Promise<Route[]> {
     return await db.select().from(routes);
   }
 
-  async getSchedule(id: string): Promise<Schedule | undefined> {
+  async getSchedule(id: string): Promise<Route | undefined> {
     const [schedule] = await db.select().from(routes).where(eq(routes.id, id));
     return schedule || undefined;
   }
 
-  async createSchedule(insertSchedule: InsertSchedule): Promise<Schedule> {
+  async createSchedule(insertSchedule: InsertRoute): Promise<Route> {
     const [schedule] = await db
       .insert(routes)
       .values(insertSchedule)
@@ -242,7 +242,7 @@ export class DatabaseStorage implements IStorage {
     return schedule;
   }
 
-  async updateSchedule(id: string, updates: Partial<Schedule>): Promise<Schedule | undefined> {
+  async updateSchedule(id: string, updates: Partial<Route>): Promise<Route | undefined> {
     const [updated] = await db
       .update(routes)
       .set(updates)
