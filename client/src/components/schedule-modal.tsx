@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { InsertSchedule, insertScheduleSchema, Schedule } from "@shared/schema";
+import { InsertRoute, insertRouteSchema, Route } from "@shared/schema";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,15 +14,15 @@ import { X } from "lucide-react";
 interface ScheduleModalProps {
   isOpen: boolean;
   onClose: () => void;
-  schedule?: Schedule | null;
+  schedule?: Route | null;
 }
 
 export function ScheduleModal({ isOpen, onClose, schedule }: ScheduleModalProps) {
   const { toast } = useToast();
   const isEditing = !!schedule;
 
-  const form = useForm<InsertSchedule>({
-    resolver: zodResolver(insertScheduleSchema),
+  const form = useForm<InsertRoute>({
+    resolver: zodResolver(insertRouteSchema),
     defaultValues: {
       routeName: schedule?.routeName || "",
       routeNumber: schedule?.routeNumber || 1,
@@ -33,12 +33,12 @@ export function ScheduleModal({ isOpen, onClose, schedule }: ScheduleModalProps)
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: InsertSchedule) => apiRequest("POST", "/api/schedules", data),
+    mutationFn: (data: InsertRoute) => apiRequest("POST", "/api/schedules", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/schedules'] });
       toast({ 
-        title: "Horario creado exitosamente",
-        description: "El nuevo horario ha sido registrado.",
+        title: "Ruta creada exitosamente",
+        description: "La nueva ruta ha sido registrada.",
       });
       onClose();
       form.reset();
@@ -46,14 +46,14 @@ export function ScheduleModal({ isOpen, onClose, schedule }: ScheduleModalProps)
     onError: (error: any) => {
       toast({
         variant: "destructive",
-        title: "Error al crear horario",
-        description: error.message || "No se pudo crear el horario",
+        title: "Error al crear ruta",
+        description: error.message || "No se pudo crear la ruta",
       });
     },
   });
 
   const updateMutation = useMutation({
-    mutationFn: (data: InsertSchedule) => 
+    mutationFn: (data: InsertRoute) => 
       apiRequest("PUT", `/api/schedules/${schedule?.id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/schedules'] });
@@ -67,13 +67,13 @@ export function ScheduleModal({ isOpen, onClose, schedule }: ScheduleModalProps)
     onError: (error: any) => {
       toast({
         variant: "destructive",
-        title: "Error al actualizar horario",
-        description: error.message || "No se pudo actualizar el horario",
+        title: "Error al actualizar ruta",
+        description: error.message || "No se pudo actualizar la ruta",
       });
     },
   });
 
-  const onSubmit = (data: InsertSchedule) => {
+  const onSubmit = (data: InsertRoute) => {
     if (isEditing) {
       updateMutation.mutate(data);
     } else {
