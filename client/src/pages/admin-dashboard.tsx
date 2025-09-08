@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useWebSocket } from "@/hooks/use-websocket";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { authManager } from "@/lib/auth";
-import { Schedule, Assignment, User, Location, Bus } from "@shared/schema";
+import { Route as RouteType, Assignment, User, Location, Bus } from "@shared/schema";
 import { ScheduleModal } from "@/components/schedule-modal";
 import { AssignmentModal } from "@/components/assignment-modal";
 import { GoogleMap } from "@/components/google-map";
@@ -40,7 +40,7 @@ import {
 export default function AdminDashboard() {
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [isAssignmentModalOpen, setIsAssignmentModalOpen] = useState(false);
-  const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
+  const [selectedRoute, setSelectedRoute] = useState<RouteType | null>(null);
   const [activeLocations, setActiveLocations] = useState<Location[]>([]);
   const [mapCenter, setMapCenter] = useState({ lat: -12.0464, lng: -77.0428 });
   const [mapZoom, setMapZoom] = useState(12);
@@ -86,7 +86,7 @@ export default function AdminDashboard() {
   };
 
   // Fetch data
-  const { data: schedules = [], isLoading: schedulesLoading } = useQuery<Schedule[]>({
+  const { data: schedules = [], isLoading: schedulesLoading } = useQuery<RouteType[]>({
     queryKey: ['/api/schedules'],
   });
 
@@ -146,8 +146,8 @@ export default function AdminDashboard() {
   });
 
   // Helper functions
-  const handleEditSchedule = (schedule: Schedule) => {
-    setSelectedSchedule(schedule);
+  const handleEditSchedule = (schedule: RouteType) => {
+    setSelectedRoute(schedule);
     setIsScheduleModalOpen(true);
   };
 
@@ -1223,9 +1223,9 @@ export default function AdminDashboard() {
         isOpen={isScheduleModalOpen}
         onClose={() => {
           setIsScheduleModalOpen(false);
-          setSelectedSchedule(null);
+          setSelectedRoute(null);
         }}
-        schedule={selectedSchedule}
+        schedule={selectedRoute}
       />
 
       <AssignmentModal

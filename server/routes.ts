@@ -6,7 +6,7 @@ import { z } from "zod";
 import bcrypt from "bcrypt";
 import { 
   loginSchema, 
-  insertScheduleSchema,
+  insertRouteSchema,
   insertBusSchema,
   insertAssignmentSchema,
   insertLocationSchema,
@@ -97,7 +97,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/schedules", async (req, res) => {
     try {
-      const scheduleData = insertScheduleSchema.parse(req.body);
+      const scheduleData = insertRouteSchema.parse(req.body);
       const schedule = await storage.createSchedule(scheduleData);
       res.json(schedule);
     } catch (error) {
