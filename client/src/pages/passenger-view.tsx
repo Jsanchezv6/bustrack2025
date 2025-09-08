@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { GoogleMap } from '@/components/google-map';
-import { Location, Assignment, Route } from '@shared/schema';
+import { Location, Assignment, Route, User, Bus as BusType } from '@shared/schema';
 
 interface PassengerViewProps {
   onBackToLogin: () => void;
@@ -32,6 +32,16 @@ export default function PassengerView({ onBackToLogin }: PassengerViewProps) {
     queryKey: ['/api/schedules'],
   });
 
+  // Consultar usuarios para obtener nombres de choferes
+  const { data: users = [] } = useQuery<User[]>({
+    queryKey: ['/api/users'],
+  });
+
+  // Consultar buses para obtener modelos
+  const { data: buses = [] } = useQuery<BusType[]>({
+    queryKey: ['/api/buses'],
+  });
+
   // Obtener información de choferes transmitiendo
   const transmittingDrivers = locations.filter(loc => loc.isTransmitting);
 
@@ -50,6 +60,16 @@ export default function PassengerView({ onBackToLogin }: PassengerViewProps) {
   // Obtener información de la ruta por ID
   const getRouteInfo = (scheduleId: string) => {
     return routes.find((route) => route.id === scheduleId);
+  };
+
+  // Obtener información del chofer por ID
+  const getDriverInfo = (driverId: string) => {
+    return users.find((user) => user.id === driverId);
+  };
+
+  // Obtener información del bus por ID
+  const getBusInfo = (busId: string) => {
+    return buses.find((bus) => bus.id === busId);
   };
 
   // Formatear hora
@@ -191,19 +211,31 @@ export default function PassengerView({ onBackToLogin }: PassengerViewProps) {
                       .sort((a, b) => a.shiftStart.localeCompare(b.shiftStart))
                       .map((assignment, index) => {
                         const route = getRouteInfo(assignment.scheduleId);
+                        const driver = getDriverInfo(assignment.driverId);
+                        const bus = getBusInfo(assignment.busId);
                         const driverLocation = locations.find(loc => loc.driverId === assignment.driverId);
                         const isTransmitting = driverLocation?.isTransmitting || false;
                         
                         return (
                           <div key={assignment.id} className="p-3 border rounded-lg hover:bg-gray-50">
                             <div className="flex items-center justify-between mb-2">
-                              <div>
+                              <div className="flex-1">
                                 <p className="font-medium" data-testid={`text-route-${index}`}>
                                   {route?.routeName || 'Ruta sin nombre'}
                                 </p>
                                 <p className="text-sm text-gray-600">
                                   {formatTime(assignment.shiftStart)} - {formatTime(assignment.shiftEnd)}
                                 </p>
+                                <div className="mt-1 space-y-1">
+                                  <p className="text-xs text-gray-500 flex items-center">
+                                    <span className="mr-1">👤</span>
+                                    Chofer: {driver?.fullName || 'No asignado'}
+                                  </p>
+                                  <p className="text-xs text-gray-500 flex items-center">
+                                    <span className="mr-1">🚌</span>
+                                    Bus: {bus?.model || 'No especificado'} ({bus?.busNumber || 'N/A'})
+                                  </p>
+                                </div>
                               </div>
                               <div className="flex items-center space-x-2">
                                 <Badge 
