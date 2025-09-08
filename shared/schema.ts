@@ -13,7 +13,7 @@ export const users = pgTable("users", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const schedules = pgTable("schedules", {
+export const routes = pgTable("routes", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   routeName: text("route_name").notNull(),
   routeNumber: integer("route_number").notNull(),
@@ -39,7 +39,7 @@ export const buses = pgTable("buses", {
 export const assignments = pgTable("assignments", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   driverId: varchar("driver_id").references(() => users.id).notNull(),
-  scheduleId: varchar("schedule_id").references(() => schedules.id).notNull(),
+  scheduleId: varchar("schedule_id").references(() => routes.id).notNull(),
   busId: varchar("bus_id").references(() => buses.id).notNull(), // Referencia al bus asignado
   assignedDate: text("assigned_date").notNull(), // YYYY-MM-DD format
   shiftStart: text("shift_start").notNull(), // HH:MM format
@@ -72,7 +72,7 @@ export const insertUserSchema = createInsertSchema(users).omit({
   createdAt: true,
 });
 
-export const insertScheduleSchema = createInsertSchema(schedules).omit({
+export const insertRouteSchema = createInsertSchema(routes).omit({
   id: true,
   createdAt: true,
 });
@@ -102,8 +102,8 @@ export const insertReportSchema = createInsertSchema(reports).omit({
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 
-export type Schedule = typeof schedules.$inferSelect;
-export type InsertSchedule = z.infer<typeof insertScheduleSchema>;
+export type Route = typeof routes.$inferSelect;
+export type InsertRoute = z.infer<typeof insertRouteSchema>;
 
 export type Bus = typeof buses.$inferSelect;
 export type InsertBus = z.infer<typeof insertBusSchema>;
