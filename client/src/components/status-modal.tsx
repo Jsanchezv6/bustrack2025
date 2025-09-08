@@ -28,6 +28,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { authManager } from "@/lib/auth";
 import { RefreshCw } from "lucide-react";
 
 // Esquema para actualizar estado
@@ -59,16 +60,24 @@ export function StatusModal({ driverId, currentStatus = "disponible" }: StatusMo
   const updateStatusMutation = useMutation({
     mutationFn: (data: StatusFormData) =>
       apiRequest('PUT', `/api/users/${driverId}/status`, data),
-    onSuccess: () => {
+    onSuccess: (response) => {
       toast({
         title: "Estado actualizado",
         description: "Su estado ha sido actualizado exitosamente.",
       });
       setOpen(false);
       
+      // Actualizar el usuario en AuthManager con el nuevo estado
+      const currentUser = authManager.getCurrentUser();
+      if (currentUser) {
+        const updatedUser = { ...currentUser, driverStatus: form.getValues().driverStatus };
+        authManager.setCurrentUser(updatedUser);
+      }
+      
       // Invalidar las consultas para refrescar los datos
       queryClient.invalidateQueries({ queryKey: ['/api/users'] });
       queryClient.invalidateQueries({ queryKey: ['/api/drivers'] });
+      queryClient.refetchQueries({ queryKey: ['/api/users'] });
     },
     onError: (error: any) => {
       console.error("Error actualizando estado:", error);
