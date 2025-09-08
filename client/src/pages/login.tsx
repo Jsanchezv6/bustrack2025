@@ -10,7 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { authManager } from "@/lib/auth";
-import { Bus } from "lucide-react";
+import { Bus, Users } from "lucide-react";
 
 export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
@@ -119,6 +119,20 @@ export default function Login() {
             </form>
           </Form>
 
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <div className="text-center">
+              <p className="text-sm text-gray-600 mb-3">¿Eres pasajero?</p>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => navigate('/passenger')}
+                data-testid="button-passenger-access"
+              >
+                <Users className="w-4 h-4 mr-2" />
+                Ver Información de Transporte
+              </Button>
+            </div>
+          </div>
 
         </CardContent>
       </Card>

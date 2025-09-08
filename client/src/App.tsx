@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import Login from "@/pages/login";
 import AdminDashboard from "@/pages/admin-dashboard";
 import DriverDashboard from "@/pages/driver-dashboard";
+import PassengerView from "@/pages/passenger-view";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -20,20 +21,19 @@ function Router() {
     );
   }
 
-  if (!user) {
-    return <Login />;
-  }
-
   return (
     <Switch>
+      <Route path="/passenger">
+        <PassengerView onBackToLogin={() => window.location.href = '/'} />
+      </Route>
       <Route path="/">
-        {user.role === 'admin' ? <AdminDashboard /> : <DriverDashboard />}
+        {!user ? <Login /> : user.role === 'admin' ? <AdminDashboard /> : <DriverDashboard />}
       </Route>
       <Route path="/admin">
-        {user.role === 'admin' ? <AdminDashboard /> : <NotFound />}
+        {user?.role === 'admin' ? <AdminDashboard /> : <NotFound />}
       </Route>
       <Route path="/driver">
-        {user.role === 'driver' ? <DriverDashboard /> : <NotFound />}
+        {user?.role === 'driver' ? <DriverDashboard /> : <NotFound />}
       </Route>
       <Route component={NotFound} />
     </Switch>
