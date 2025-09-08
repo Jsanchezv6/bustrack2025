@@ -82,7 +82,7 @@ export default function AdminDashboard() {
 
   const handleLogout = () => {
     authManager.logout();
-    window.location.href = '/login';
+    window.location.href = '/';
   };
 
   // Fetch data

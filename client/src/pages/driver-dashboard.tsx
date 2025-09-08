@@ -7,7 +7,7 @@ import { useWebSocket } from "@/hooks/use-websocket";
 import { useGeolocation } from "@/hooks/use-geolocation";
 import { apiRequest } from "@/lib/queryClient";
 import { authManager } from "@/lib/auth";
-import { Assignment, Schedule } from "@shared/schema";
+import { Assignment, Route as RouteType } from "@shared/schema";
 import { 
   Compass, 
   LogOut,
@@ -151,7 +151,7 @@ export default function DriverDashboard() {
   });
 
   // Query para schedule del turno actual
-  const { data: currentSchedule, isLoading: currentScheduleLoading } = useQuery<Schedule>({
+  const { data: currentSchedule, isLoading: currentScheduleLoading } = useQuery<RouteType>({
     queryKey: ['/api/schedules', shifts?.current?.scheduleId],
     queryFn: async () => {
       if (!shifts?.current?.scheduleId) return null;
@@ -165,7 +165,7 @@ export default function DriverDashboard() {
   });
 
   // Query para schedule del turno siguiente
-  const { data: nextSchedule, isLoading: nextScheduleLoading } = useQuery<Schedule>({
+  const { data: nextSchedule, isLoading: nextScheduleLoading } = useQuery<RouteType>({
     queryKey: ['/api/schedules', shifts?.next?.scheduleId],
     queryFn: async () => {
       if (!shifts?.next?.scheduleId) return null;
@@ -275,6 +275,7 @@ export default function DriverDashboard() {
       }
     }
     await authManager.logout();
+    window.location.href = '/';
   };
 
   // Limpiar intervalo al desmontar el componente

@@ -26,14 +26,17 @@ function Router() {
       <Route path="/passenger">
         <PassengerView onBackToLogin={() => window.location.href = '/'} />
       </Route>
+      <Route path="/login">
+        <Login />
+      </Route>
       <Route path="/">
         {!user ? <Login /> : user.role === 'admin' ? <AdminDashboard /> : <DriverDashboard />}
       </Route>
       <Route path="/admin">
-        {user?.role === 'admin' ? <AdminDashboard /> : <NotFound />}
+        {user?.role === 'admin' ? <AdminDashboard /> : <Login />}
       </Route>
       <Route path="/driver">
-        {user?.role === 'driver' ? <DriverDashboard /> : <NotFound />}
+        {user?.role === 'driver' ? <DriverDashboard /> : <Login />}
       </Route>
       <Route component={NotFound} />
     </Switch>
