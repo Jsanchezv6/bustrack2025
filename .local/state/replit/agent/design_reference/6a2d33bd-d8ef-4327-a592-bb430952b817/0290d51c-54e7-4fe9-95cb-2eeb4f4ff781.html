@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión de Transporte Público</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                fontFamily: {
+                    'roboto': ['Roboto', 'sans-serif'],
+                },
+                colors: {
+                    primary: '#1976D2',
+                    secondary: '#388E3C',
+                    accent: '#FF9800',
+                    neutral: '#F5F5F5',
+                }
+            }
+        }
+    };
+    </script>
+</head>
+<body class="font-roboto bg-neutral min-h-screen">
+
+<!-- @COMPONENT: AuthenticationModal -->
+<div id="authModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-2xl w-full max-w-md mx-4">
+        <div class="p-8">
+            <div class="text-center mb-8">
+                <i class="fas fa-bus text-primary text-4xl mb-4"></i>
+                <h1 class="text-2xl font-bold text-gray-800">Sistema de Transporte</h1>
+                <p class="text-gray-600 mt-2">Gestión y Monitoreo</p>
+            </div>
+            
+            <form class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Usuario</label>
+                    <input type="text" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Ingrese su usuario" data-mock="true">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Contraseña</label>
+                    <input type="password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Ingrese su contraseña" data-mock="true">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Usuario</label>
+                    <select id="userRole" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <option value="admin">Administrador</option>
+                        <option value="driver">Chofer</option>
+                    </select>
+                </div>
+                
+                <button type="button" onclick="loginUser()" class="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+                    Iniciar Sesión
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- @END_COMPONENT: AuthenticationModal -->
+
+<!-- @COMPONENT: AdminDashboard -->
+<div id="adminDashboard" class="hidden">
+    <!-- Admin Navigation -->
+    <nav class="bg-primary text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-bus text-2xl"></i>
+                    <h1 class="text-xl font-semibold">Panel Administrador</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm">Admin Usuario</span>
+                    <button onclick="logout()" class="bg-blue-700 px-3 py-2 rounded hover:bg-blue-800 transition-colors">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Dashboard Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="bg-primary bg-opacity-10 p-3 rounded-full">
+                        <i class="fas fa-bus text-primary text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-semibold text-gray-800" data-bind="stats.totalBuses">12</h3>
+                        <p class="text-gray-600">Buses Activos</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="bg-secondary bg-opacity-10 p-3 rounded-full">
+                        <i class="fas fa-users text-secondary text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-semibold text-gray-800" data-bind="stats.totalDrivers">24</h3>
+                        <p class="text-gray-600">Choferes</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="bg-accent bg-opacity-10 p-3 rounded-full">
+                        <i class="fas fa-route text-accent text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-semibold text-gray-800" data-bind="stats.totalRoutes">8</h3>
+                        <p class="text-gray-600">Rutas</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="bg-green-500 bg-opacity-10 p-3 rounded-full">
+                        <i class="fas fa-map-marker-alt text-green-500 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-semibold text-gray-800" data-bind="stats.activeTransmissions">6</h3>
+                        <p class="text-gray-600">Transmitiendo</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Tabs -->
+        <div class="bg-white rounded-lg shadow-md">
+            <div class="border-b border-gray-200">
+                <nav class="flex space-x-8 px-6">
+                    <a href="#" onclick="showTab('schedules')" id="schedulesTab" class="py-4 px-1 border-b-2 border-primary text-primary font-medium">
+                        <i class="fas fa-calendar-alt mr-2"></i>Horarios
+                    </a>
+                    <a href="#" onclick="showTab('assignments')" id="assignmentsTab" class="py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-user-cog mr-2"></i>Asignaciones
+                    </a>
+                    <a href="#" onclick="showTab('monitoring')" id="monitoringTab" class="py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-eye mr-2"></i>Monitoreo
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Schedules Tab -->
+            <div id="schedulesContent" class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-semibold text-gray-800">Gestión de Horarios</h2>
+                    <button onclick="openScheduleModal()" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-plus mr-2"></i>Nuevo Horario
+                    </button>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full table-auto">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ruta</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hora Inicio</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hora Fin</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Frecuencia</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            <!-- @MAP: schedules.map(schedule => ( -->
+                            <tr data-mock="true">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">1</div>
+                                        <span class="font-medium">Centro - Universidad</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-gray-900">06:00</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-gray-900">22:00</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-gray-900">15 min</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">Activo</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap space-x-2">
+                                    <button class="text-blue-600 hover:text-blue-800">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="text-red-600 hover:text-red-800">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr data-mock="true">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="bg-secondary text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">2</div>
+                                        <span class="font-medium">Terminal - Hospital</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-gray-900">05:30</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-gray-900">23:00</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-gray-900">20 min</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">Activo</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap space-x-2">
+                                    <button class="text-blue-600 hover:text-blue-800">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="text-red-600 hover:text-red-800">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <!-- @END_MAP )) -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Assignments Tab -->
+            <div id="assignmentsContent" class="hidden p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-semibold text-gray-800">Asignación de Turnos</h2>
+                    <button onclick="openAssignmentModal()" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-plus mr-2"></i>Nueva Asignación
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Available Drivers -->
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h3 class="font-semibold text-gray-800 mb-4">Choferes Disponibles</h3>
+                        <div class="space-y-3">
+                            <!-- @MAP: availableDrivers.map(driver => ( -->
+                            <div class="bg-white rounded-lg p-4 shadow-sm" data-mock="true">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="bg-gray-300 rounded-full w-10 h-10 flex items-center justify-center mr-3">
+                                            <i class="fas fa-user text-gray-600"></i>
+                                        </div>
+                                        <div>
+                                            <p class="font-medium">Carlos Mendoza</p>
+                                            <p class="text-sm text-gray-600">Licencia: A1234567</p>
+                                        </div>
+                                    </div>
+                                    <span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">Disponible</span>
+                                </div>
+                            </div>
+                            <div class="bg-white rounded-lg p-4 shadow-sm" data-mock="true">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="bg-gray-300 rounded-full w-10 h-10 flex items-center justify-center mr-3">
+                                            <i class="fas fa-user text-gray-600"></i>
+                                        </div>
+                                        <div>
+                                            <p class="font-medium">Ana García</p>
+                                            <p class="text-sm text-gray-600">Licencia: B9876543</p>
+                                        </div>
+                                    </div>
+                                    <span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">Disponible</span>
+                                </div>
+                            </div>
+                            <!-- @END_MAP )) -->
+                        </div>
+                    </div>
+                    
+                    <!-- Current Assignments -->
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h3 class="font-semibold text-gray-800 mb-4">Asignaciones Actuales</h3>
+                        <div class="space-y-3">
+                            <!-- @MAP: currentAssignments.map(assignment => ( -->
+                            <div class="bg-white rounded-lg p-4 shadow-sm" data-mock="true">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center">
+                                        <div class="bg-primary text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-2">1</div>
+                                        <span class="font-medium">Juan Pérez</span>
+                                    </div>
+                                    <button class="text-red-600 hover:text-red-800">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <p class="text-sm text-gray-600">Centro - Universidad</p>
+                                <p class="text-xs text-gray-500">06:00 - 14:00</p>
+                            </div>
+                            <div class="bg-white rounded-lg p-4 shadow-sm" data-mock="true">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center">
+                                        <div class="bg-secondary text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-2">2</div>
+                                        <span class="font-medium">María López</span>
+                                    </div>
+                                    <button class="text-red-600 hover:text-red-800">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <p class="text-sm text-gray-600">Terminal - Hospital</p>
+                                <p class="text-xs text-gray-500">14:00 - 22:00</p>
+                            </div>
+                            <!-- @END_MAP )) -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Monitoring Tab -->
+            <div id="monitoringContent" class="hidden p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-6">Monitoreo en Tiempo Real</h2>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Map Area -->
+                    <div class="lg:col-span-2">
+                        <div class="bg-gray-200 rounded-lg aspect-video flex items-center justify-center">
+                            <!-- TODO: Implement real-time map with driver locations -->
+                            <div class="text-center">
+                                <i class="fas fa-map text-4xl text-gray-400 mb-4"></i>
+                                <p class="text-gray-600">Mapa de Ubicaciones en Tiempo Real</p>
+                                <p class="text-sm text-gray-500 mt-2">Aquí se mostraría un mapa interactivo con las ubicaciones de los buses</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Driver Status -->
+                    <div class="space-y-4">
+                        <h3 class="font-semibold text-gray-800">Estado de Choferes</h3>
+                        <!-- @MAP: driversStatus.map(driver => ( -->
+                        <div class="bg-white rounded-lg p-4 shadow-sm border-l-4 border-green-500" data-mock="true">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="font-medium">Juan Pérez</span>
+                                <span class="flex items-center text-green-600">
+                                    <i class="fas fa-circle text-xs mr-1"></i>
+                                    Transmitiendo
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-600">Ruta 1 - Centro - Universidad</p>
+                            <p class="text-xs text-gray-500">Última actualización: hace 30s</p>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 shadow-sm border-l-4 border-gray-300" data-mock="true">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="font-medium">María López</span>
+                                <span class="flex items-center text-gray-500">
+                                    <i class="fas fa-circle text-xs mr-1"></i>
+                                    Desconectado
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-600">Ruta 2 - Terminal - Hospital</p>
+                            <p class="text-xs text-gray-500">Última actualización: hace 15m</p>
+                        </div>
+                        <!-- @END_MAP )) -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- @END_COMPONENT: AdminDashboard -->
+
+<!-- @COMPONENT: DriverDashboard -->
+<div id="driverDashboard" class="hidden">
+    <!-- Driver Navigation -->
+    <nav class="bg-secondary text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-steering-wheel text-2xl"></i>
+                    <h1 class="text-xl font-semibold">Panel Chofer</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm">Chofer Usuario</span>
+                    <button onclick="logout()" class="bg-green-700 px-3 py-2 rounded hover:bg-green-800 transition-colors">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto px-4 py-8">
+        <!-- Location Control Card -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div class="text-center">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Control de Ubicación</h2>
+                <!-- @STATE: isTransmitting:boolean = false -->
+                <div id="locationStatus" class="mb-6">
+                    <div class="flex items-center justify-center mb-4">
+                        <i id="locationIcon" class="fas fa-map-marker-alt text-4xl text-gray-400"></i>
+                    </div>
+                    <p id="statusText" class="text-gray-600 mb-4">Estado: Desconectado</p>
+                    <p id="locationInfo" class="text-sm text-gray-500 hidden">Ubicación compartida cada 30 segundos</p>
+                </div>
+                
+                <button id="locationToggle" onclick="toggleLocationTransmission()" class="bg-accent text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-orange-600 transition-colors" data-event="click:toggleLocationTransmission">
+                    <i class="fas fa-play mr-2"></i>
+                    Iniciar Transmisión
+                </button>
+            </div>
+        </div>
+
+        <!-- Current Assignment -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">Mi Turno Actual</h3>
+            <div class="bg-gray-50 rounded-lg p-4" data-mock="true">
+                <div class="flex items-center mb-4">
+                    <div class="bg-primary text-white rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold mr-4">1</div>
+                    <div>
+                        <h4 class="text-lg font-semibold">Ruta Centro - Universidad</h4>
+                        <p class="text-gray-600">Turno: 06:00 - 14:00</p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <span class="text-gray-600">Frecuencia:</span>
+                        <span class="font-medium ml-2">15 minutos</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-600">Tiempo restante:</span>
+                        <span class="font-medium ml-2 text-green-600">4h 30m</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Route Information -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">Información de Ruta</h3>
+            
+            <div class="space-y-4">
+                <div class="flex items-center space-x-4">
+                    <div class="bg-green-100 p-2 rounded-full">
+                        <i class="fas fa-play text-green-600"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium">Terminal Central</p>
+                        <p class="text-sm text-gray-600">Punto de inicio</p>
+                    </div>
+                </div>
+                
+                <div class="border-l-2 border-gray-200 ml-6 pl-4 space-y-3">
+                    <!-- @MAP: routeStops.map(stop => ( -->
+                    <div class="flex items-center space-x-4" data-mock="true">
+                        <div class="bg-blue-100 p-2 rounded-full">
+                            <i class="fas fa-circle text-blue-600 text-xs"></i>
+                        </div>
+                        <div>
+                            <p class="font-medium">Plaza Mayor</p>
+                            <p class="text-sm text-gray-600">Parada intermedia</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4" data-mock="true">
+                        <div class="bg-blue-100 p-2 rounded-full">
+                            <i class="fas fa-circle text-blue-600 text-xs"></i>
+                        </div>
+                        <div>
+                            <p class="font-medium">Hospital Regional</p>
+                            <p class="text-sm text-gray-600">Parada intermedia</p>
+                        </div>
+                    </div>
+                    <!-- @END_MAP )) -->
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <div class="bg-red-100 p-2 rounded-full">
+                        <i class="fas fa-stop text-red-600"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium">Universidad Nacional</p>
+                        <p class="text-sm text-gray-600">Destino final</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- @END_COMPONENT: DriverDashboard -->
+
+<!-- @COMPONENT: ScheduleModal -->
+<div id="scheduleModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-semibold text-gray-800">Nuevo Horario</h2>
+                <button onclick="closeScheduleModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nombre de Ruta</label>
+                        <input type="text" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Ej: Centro - Universidad" data-mock="true">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Número de Ruta</label>
+                        <input type="number" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="1" data-mock="true">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Hora de Inicio</label>
+                        <input type="time" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" data-mock="true">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Hora de Fin</label>
+                        <input type="time" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" data-mock="true">
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Frecuencia (minutos)</label>
+                    <select class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <option value="10">10 minutos</option>
+                        <option value="15">15 minutos</option>
+                        <option value="20">20 minutos</option>
+                        <option value="30">30 minutos</option>
+                    </select>
+                </div>
+                
+                <div class="flex space-x-4">
+                    <button type="button" onclick="closeScheduleModal()" class="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-400 transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="button" onclick="saveSchedule()" class="flex-1 bg-primary text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+                        Guardar Horario
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- @END_COMPONENT: ScheduleModal -->
+
+<script>
+// TODO: Implement business logic, API calls, and state management
+(function() {
+    'use strict';
+    
+    // Global state management
+    let currentUser = null;
+    let isTransmitting = false;
+    let locationWatchId = null;
+    
+    // Authentication functions
+    window.loginUser = function() {
+        const userRole = document.getElementById('userRole').value;
+        currentUser = { role: userRole };
+        
+        document.getElementById('authModal').classList.add('hidden');
+        
+        if (userRole === 'admin') {
+            document.getElementById('adminDashboard').classList.remove('hidden');
+        } else {
+            document.getElementById('driverDashboard').classList.remove('hidden');
+            // TODO: Initialize driver's assigned route data
+        }
+    };
+    
+    window.logout = function() {
+        currentUser = null;
+        if (isTransmitting) {
+            stopLocationTransmission();
+        }
+        
+        document.getElementById('adminDashboard').classList.add('hidden');
+        document.getElementById('driverDashboard').classList.add('hidden');
+        document.getElementById('authModal').classList.remove('hidden');
+    };
+    
+    // Admin dashboard functions
+    window.showTab = function(tabName) {
+        // Hide all tab contents
+        document.getElementById('schedulesContent').classList.add('hidden');
+        document.getElementById('assignmentsContent').classList.add('hidden');
+        document.getElementById('monitoringContent').classList.add('hidden');
+        
+        // Remove active class from all tabs
+        document.getElementById('schedulesTab').className = 'py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700';
+        document.getElementById('assignmentsTab').className = 'py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700';
+        document.getElementById('monitoringTab').className = 'py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700';
+        
+        // Show selected tab and mark as active
+        document.getElementById(tabName + 'Content').classList.remove('hidden');
+        document.getElementById(tabName + 'Tab').className = 'py-4 px-1 border-b-2 border-primary text-primary font-medium';
+    };
+    
+    // Modal functions
+    window.openScheduleModal = function() {
+        document.getElementById('scheduleModal').classList.remove('hidden');
+    };
+    
+    window.closeScheduleModal = function() {
+        document.getElementById('scheduleModal').classList.add('hidden');
+    };
+    
+    window.openAssignmentModal = function() {
+        // TODO: Implement assignment modal
+        alert('Funcionalidad de asignación en desarrollo');
+    };
+    
+    window.saveSchedule = function() {
+        // TODO: Implement schedule saving logic
+        alert('Horario guardado exitosamente');
+        closeScheduleModal();
+    };
+    
+    // Driver location functions
+    window.toggleLocationTransmission = function() {
+        if (!isTransmitting) {
+            startLocationTransmission();
+        } else {
+            stopLocationTransmission();
+        }
+    };
+    
+    function startLocationTransmission() {
+        if (!navigator.geolocation) {
+            alert('La geolocalización no está soportada por este navegador.');
+            return;
+        }
+        
+        // Request location permission and start watching
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                isTransmitting = true;
+                updateLocationUI();
+                
+                // Watch position with high accuracy
+                locationWatchId = navigator.geolocation.watchPosition(
+                    handleLocationUpdate,
+                    handleLocationError,
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 30000
+                    }
+                );
+                
+                // TODO: Start sending location to server every 30 seconds
+                console.log('Transmisión de ubicación iniciada');
+            },
+            function(error) {
+                handleLocationError(error);
+            }
+        );
+    }
+    
+    function stopLocationTransmission() {
+        if (locationWatchId) {
+            navigator.geolocation.clearWatch(locationWatchId);
+            locationWatchId = null;
+        }
+        
+        isTransmitting = false;
+        updateLocationUI();
+        
+        // TODO: Stop sending location to server
+        console.log('Transmisión de ubicación detenida');
+    }
+    
+    function handleLocationUpdate(position) {
+        const coords = position.coords;
+        // TODO: Send coordinates to server
+        console.log('Ubicación actualizada:', coords.latitude, coords.longitude);
+    }
+    
+    function handleLocationError(error) {
+        let message = 'Error desconocido al obtener ubicación.';
+        
+        switch(error.code) {
+            case error.PERMISSION_DENIED:
+                message = 'Permisos de ubicación denegados.';
+                break;
+            case error.POSITION_UNAVAILABLE:
+                message = 'Información de ubicación no disponible.';
+                break;
+            case error.TIMEOUT:
+                message = 'Tiempo de espera agotado al obtener ubicación.';
+                break;
+        }
+        
+        alert(message);
+        if (isTransmitting) {
+            stopLocationTransmission();
+        }
+    }
+    
+    function updateLocationUI() {
+        const iconElement = document.getElementById('locationIcon');
+        const statusElement = document.getElementById('statusText');
+        const infoElement = document.getElementById('locationInfo');
+        const buttonElement = document.getElementById('locationToggle');
+        
+        if (isTransmitting) {
+            iconElement.className = 'fas fa-map-marker-alt text-4xl text-green-500';
+            statusElement.textContent = 'Estado: Transmitiendo ubicación';
+            statusElement.className = 'text-green-600 mb-4 font-medium';
+            infoElement.classList.remove('hidden');
+            buttonElement.innerHTML = '<i class="fas fa-stop mr-2"></i>Detener Transmisión';
+            buttonElement.className = 'bg-red-500 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-red-600 transition-colors';
+        } else {
+            iconElement.className = 'fas fa-map-marker-alt text-4xl text-gray-400';
+            statusElement.textContent = 'Estado: Desconectado';
+            statusElement.className = 'text-gray-600 mb-4';
+            infoElement.classList.add('hidden');
+            buttonElement.innerHTML = '<i class="fas fa-play mr-2"></i>Iniciar Transmisión';
+            buttonElement.className = 'bg-accent text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-orange-600 transition-colors';
+        }
+    }
+    
+    // Initialize application
+    document.addEventListener('DOMContentLoaded', function() {
+        // Show login modal by default
+        document.getElementById('authModal').classList.remove('hidden');
+    });
+    
+})();
+</script>
+
+</body>
+</html>
